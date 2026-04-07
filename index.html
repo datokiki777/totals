@@ -47,7 +47,7 @@ if (themeColorMeta) {
 
 </head>
 
-<body class="booting">
+<body class="booting" autocapitalize="off">
 
      <div id="splash">
           <div class="loader-ring"></div>
@@ -113,7 +113,7 @@ if (themeColorMeta) {
 
         <label class="field">
           <span>Default %</span>
-          <input id="defaultRate" type="number" step="0.01" min="0" max="100" value="13.5" />
+          <input id="defaultRate" type="number" step="0.01" min="0" max="100" value="13.5" autocomplete="off" />
         </label>
       </div>
 
@@ -263,11 +263,11 @@ if (themeColorMeta) {
              <div class="period-dates">
             <label class="field">
               <span>From</span>
-              <input class="fromDate" type="date" />
+              <input class="fromDate" type="date" autocomplete="off" />
             </label>
             <label class="field">
               <span>To</span>
-              <input class="toDate" type="date" />
+              <input class="toDate" type="date" autocomplete="off" />
             </label>
           </div>
         </div>
@@ -301,28 +301,75 @@ if (themeColorMeta) {
               <td class="total-net">0.00</td>
             <td class="total-my">
             <span class="pill">My €: <b class="my-eur">0.00</b></span>
-                  </td>
-                 <td></td>
-               <td></td>
-            </tr>
+                   </td>
+                  <td></td>
+                <td></td>
+             </tr>
         </tfoot>
-        </table>
+         </table>
       </div>
     </div>
   </section>
 </template>
 
   <template id="rowTpl">
-  <tr>
-    <td><input class="cust" type="text" placeholder="Client name" /></td>
-    <td><input class="gross" type="text" inputmode="decimal" placeholder="0" /></td>
-    <td><input class="net" type="text" inputmode="decimal" placeholder="0" /></td>
-    <td><input class="city" type="text" placeholder="City" /></td>
-    <td class="done-cell">
-      <button class="doneBtn state-none" type="button" aria-label="Status"></button>
-    </td>
-    <td><button class="btn small ghost removeRow">Remove</button></td>
-  </tr>
+    <tr>
+      <td>
+        <input
+          class="cust"
+          type="text"
+          placeholder="Client name"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </td>
+
+      <td>
+        <input
+          class="gross"
+          type="text"
+          inputmode="decimal"
+          placeholder="0"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </td>
+
+      <td>
+        <input
+          class="net"
+          type="text"
+          inputmode="decimal"
+          placeholder="0"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </td>
+
+      <td>
+        <input
+          class="city"
+          type="text"
+          placeholder="City"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </td>
+
+      <td class="done-cell">
+        <button class="doneBtn state-none" type="button" aria-label="Status"></button>
+      </td>
+
+      <td><button class="btn small ghost removeRow">Remove</button></td>
+    </tr>
 </template>
 
   <!-- Scroll to top button (must be inside body) -->
@@ -343,7 +390,10 @@ if (themeColorMeta) {
         maxlength="6"
         class="review-search-input pin-lock-input"
         placeholder="6-digit PIN"
-        autocomplete="off"
+        autocomplete="new-password"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
       />
     </div>
 
@@ -448,6 +498,10 @@ if (themeColorMeta) {
         class="review-search-input"
         style="width:100%;"
         placeholder="Type here"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
       />
     </div>
 
