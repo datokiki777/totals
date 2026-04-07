@@ -1,4 +1,4 @@
-const CACHE = "client-totals-shell-v2.4";
+const CACHE = "client-totals-shell-v2.5";
 
 const CORE_ASSETS = [
   "./",
@@ -61,18 +61,23 @@ self.addEventListener("fetch", (event) => {
   }
 
   // CSS / JS / manifest -> network first
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
+if (
+  url.pathname.endsWith(".css") ||
+  url.pathname.endsWith(".js") ||
+  url.pathname.endsWith(".json") ||
+  url.pathname.endsWith(".webmanifest")
+) {
+  event.respondWith(
+    fetch(req)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((cache) => cache.put(req, copy));
+        return res;
+      })
+      .catch(() => caches.match(req))
+  );
+  return;
+}
 
   // others -> cache first
   event.respondWith(
