@@ -1,4 +1,4 @@
-const CACHE = "client-totals-shell-v2.8";
+const CACHE = "client-totals-shell-v3.0";
 
 const CORE_ASSETS = [
   "./",
@@ -27,7 +27,8 @@ const CORE_ASSETS = [
   "./js/10-search.js",
   "./js/11-import-export.js",
   "./js/12-theme.js",
-  "./js/13-app.js"
+  "./js/13-app.js",
+  "./js/14-debug.js"
 ];
 
 // install
