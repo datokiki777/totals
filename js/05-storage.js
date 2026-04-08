@@ -53,8 +53,17 @@ function getWeekKeyForReminder(date = new Date()) {
   return `${y}-${m}-${dd}`;
 }
 
-function isSundayAfter19(date = new Date()) {
-  return date.getDay() === 0 && date.getHours() >= 19;
+function isBackupReminderWindow(date = new Date()) {
+  const day = date.getDay(); // 0 = Sunday, 1 = Monday
+  const hour = date.getHours();
+
+  // Sunday from 19:00
+  if (day === 0 && hour >= 19) return true;
+
+  // All Monday
+  if (day === 1) return true;
+
+  return false;
 }
 
 function shouldShowBackupReminder(now = new Date()) {
@@ -62,7 +71,7 @@ function shouldShowBackupReminder(now = new Date()) {
     const dirty = localStorage.getItem(BACKUP_REMINDER_DIRTY_KEY) === "1";
     if (!dirty) return false;
 
-    if (!isSundayAfter19(now)) return false;
+    if (!isBackupReminderWindow(now)) return false;
 
     const currentWeekKey = getWeekKeyForReminder(now);
     const lastShownWeekKey = localStorage.getItem(BACKUP_REMINDER_LAST_SHOWN_KEY) || "";
@@ -103,17 +112,27 @@ function loadState() {
   }
 }
 
+let collapsedPeriodsCache = null;
+
 function getSavedCollapsedPeriods() {
-  try {
-    return JSON.parse(localStorage.getItem(PERIODS_COLLAPSED_KEY) || "{}");
-  } catch {
-    return {};
+  if (collapsedPeriodsCache) {
+    return collapsedPeriodsCache;
   }
+
+  try {
+    collapsedPeriodsCache = JSON.parse(localStorage.getItem(PERIODS_COLLAPSED_KEY) || "{}");
+  } catch {
+    collapsedPeriodsCache = {};
+  }
+
+  return collapsedPeriodsCache;
 }
 
 function saveCollapsedPeriods(map) {
+  collapsedPeriodsCache = map || {};
+
   try {
-    localStorage.setItem(PERIODS_COLLAPSED_KEY, JSON.stringify(map || {}));
+    localStorage.setItem(PERIODS_COLLAPSED_KEY, JSON.stringify(collapsedPeriodsCache));
   } catch {}
 }
 

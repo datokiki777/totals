@@ -100,6 +100,20 @@ function updateFloatingAddClientVisibility() {
   rootEl.classList.toggle("all-periods-collapsed", !hasOpenPeriod);
 }
 
+function getDigitsOnly(value) {
+  return String(value ?? "").replace(/\D/g, "");
+}
+
+function isSuspiciousNetComparedToGross(grossValue, netValue) {
+  const grossDigits = getDigitsOnly(grossValue);
+  const netDigits = getDigitsOnly(netValue);
+
+  if (!grossDigits || !netDigits) return false;
+
+  // если net короче gross ровно на 1 цифру
+  return grossDigits.length === netDigits.length + 1;
+}
+
 function renderMonthlyStats() {
   if (!monthLabel || !monthGrossEl || !monthNetEl || !monthMyEl) return;
 
@@ -150,8 +164,12 @@ function recalcAndRenderTotals() {
     const g = activeGroup();
     const st = g.data;
     const periodSections = elPeriods?.querySelectorAll?.(".period") ?? [];
-    periodSections.forEach((sec, i) => {
-      const p = st.periods[i];
+
+    periodSections.forEach((sec) => {
+      const periodId = sec.dataset.periodId;
+      if (!periodId) return;
+
+      const p = (st.periods || []).find((x) => x.id === periodId);
       if (!p) return;
 
       const t = calcPeriodTotals(p, st.defaultRatePercent);
@@ -325,11 +343,48 @@ function render() {
         saveState();
       });
 
-      netEl?.addEventListener("input", () => {
-        r.net = netEl.value;
-        recalcAndRenderTotals();
-        saveState();
-      });
+      let previousNetValue = r.net ?? "";
+
+netEl?.addEventListener("focus", () => {
+  previousNetValue = netEl.value;
+});
+
+netEl?.addEventListener("input", () => {
+  r.net = netEl.value;
+  recalcAndRenderTotals();
+  saveState();
+});
+
+netEl?.addEventListener("change", async () => {
+  const grossValue = grossEl?.value ?? "";
+  const netValue = netEl.value;
+
+  if (!isSuspiciousNetComparedToGross(grossValue, netValue)) {
+    previousNetValue = netValue;
+    return;
+  }
+
+  const ok = await askConfirm(
+    "Net looks much smaller than Gross.\nIs this amount correct?",
+    "Check amount",
+    { type: "primary", okText: "Yes", cancelText: "Fix" }
+  );
+
+  if (ok) {
+    previousNetValue = netValue;
+    return;
+  }
+
+  netEl.value = previousNetValue || "";
+  r.net = netEl.value;
+  recalcAndRenderTotals();
+  saveState();
+
+  setTimeout(() => {
+    netEl.focus();
+    netEl.select?.();
+  }, 30);
+});
 
       doneBtn?.addEventListener("click", () => {
         const current = ["none", "done", "fail", "fixed"].includes(r.done) ? r.done : "none";

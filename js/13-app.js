@@ -14,13 +14,16 @@ modeReviewBtn?.addEventListener("click", () => setMode("review"));
 
 totalsActiveBtn?.addEventListener("click", () => {
   if (appState.grandMode === "active") return;
+
   appState.grandMode = "active";
+  appState.lastReviewGrandMode = "active";
   saveState();
+
   updateGrandToggleUI();
-  
+
   const current = getCurrentMonthKey("active");
   setSavedMonthCursor(current);
-  
+
   render();
   if (appState.uiMode === "review") renderReview();
   renderMonthlyStats();
@@ -28,13 +31,16 @@ totalsActiveBtn?.addEventListener("click", () => {
 
 totalsAllBtn?.addEventListener("click", () => {
   if (appState.grandMode === "all") return;
+
   appState.grandMode = "all";
+  appState.lastReviewGrandMode = "all";
   saveState();
+
   updateGrandToggleUI();
-  
+
   const current = getCurrentMonthKey("all");
   setSavedMonthCursor(current);
-  
+
   render();
   if (appState.uiMode === "review") renderReview();
   renderMonthlyStats();
@@ -226,8 +232,7 @@ statusListModal?.addEventListener("click", (e) => {
 window.addEventListener("popstate", () => {
   // confirmBackdrop
   if (confirmBackdrop && confirmBackdrop.style.display === "flex") {
-    confirmBackdrop.style.display = "none";
-    if (confirmNoBtn) confirmNoBtn.onclick?.();
+    window.__closeConfirmModal?.();
     return;
   }
 
@@ -237,9 +242,9 @@ window.addEventListener("popstate", () => {
     return;
   }
 
-  // textPromptModal
+  // textPromptModal - FIX: cleanup() გამოიძახება სწორად
   if (textPromptModal && textPromptModal.style.display === "flex") {
-    textPromptModal.style.display = "none";
+    window.__closeTextPromptModal?.();
     return;
   }
 
@@ -264,6 +269,10 @@ initStatusBadgeActions();
 
 setMode(appState.uiMode || "review");
 render();
+
+if (appState.uiMode === "review") {
+  renderReview();
+}
 
 setTimeout(() => {
   if (shouldShowBackupReminder()) {

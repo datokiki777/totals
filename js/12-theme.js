@@ -103,12 +103,31 @@ function syncRootModeClass(mode = appState.uiMode) {
 }
 
 function updateWorkspaceSwitchUI() {
+  const groups = Array.isArray(appState?.groups) ? appState.groups : [];
+
+  const activeCount = groups.reduce((count, g) => {
+    return count + (g?.archived === true ? 0 : 1);
+  }, 0);
+
+  const archiveCount = groups.reduce((count, g) => {
+    return count + (g?.archived === true ? 1 : 0);
+  }, 0);
+
+  const renderWorkspaceLabel = (label, count) => {
+    if (count > 0) {
+      return `${label} <span class="ws-badge">${count}</span>`;
+    }
+    return label;
+  };
+
   if (workspaceActiveBtn) {
     workspaceActiveBtn.classList.toggle("active", appState.workspaceMode !== "archive");
+    workspaceActiveBtn.innerHTML = renderWorkspaceLabel("Active", activeCount);
   }
 
   if (workspaceArchiveBtn) {
     workspaceArchiveBtn.classList.toggle("active", appState.workspaceMode === "archive");
+    workspaceArchiveBtn.innerHTML = renderWorkspaceLabel("Archive", archiveCount);
   }
 }
 
@@ -147,10 +166,10 @@ function setWorkspaceMode(mode) {
   }
 
   if (appState.uiMode === "edit") {
-    appState.grandMode = "active";
-  } else {
-    appState.grandMode = "all";
-  }
+  appState.grandMode = "active";
+} else {
+  appState.grandMode = appState.lastReviewGrandMode === "all" ? "all" : "active";
+}
 
   saveState();
   updateWorkspaceSwitchUI();
@@ -224,14 +243,22 @@ function setControlsForMode(mode) {
 }
 
 function setMode(mode) {
-  appState.uiMode = mode === "edit" ? "edit" : "review";
-  saveState();
-  if (appState.uiMode === "edit" && appState.grandMode !== "active") {
+  const nextMode = mode === "edit" ? "edit" : "review";
+
+  if (nextMode === "edit") {
+    // შევინახოთ რა ჰქონდა review-ში ბოლოს არჩეული
+    appState.lastReviewGrandMode = appState.grandMode === "all" ? "all" : "active";
+    appState.uiMode = "edit";
     appState.grandMode = "active";
+
     const current = getCurrentMonthKey("active");
     setSavedMonthCursor(current);
-    saveState();
+  } else {
+    appState.uiMode = "review";
+    appState.grandMode = appState.lastReviewGrandMode === "all" ? "all" : "active";
   }
+
+  saveState();
 
   modeEditBtn?.classList.toggle("active", appState.uiMode === "edit");
   modeReviewBtn?.classList.toggle("active", appState.uiMode === "review");
@@ -242,12 +269,13 @@ function setMode(mode) {
     if (appState.uiMode === "review") {
       editView.hidden = true;
       reviewView.hidden = false;
-    if (globalSearchCard) globalSearchCard.hidden = false;
-   } else {
-     reviewView.hidden = true;
-     reviewView.innerHTML = "";
-  if (globalSearchCard) globalSearchCard.hidden = true;
-     editView.hidden = false;
+      if (globalSearchCard) globalSearchCard.hidden = false;
+      renderReview();
+    } else {
+      reviewView.hidden = true;
+      reviewView.innerHTML = "";
+      if (globalSearchCard) globalSearchCard.hidden = true;
+      editView.hidden = false;
     }
   }
 

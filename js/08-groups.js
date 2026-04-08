@@ -199,13 +199,17 @@ function cloneAndReIdGroup(group) {
   const g = {
     id: uuid(),
     name: (group?.name ?? "Group").toString().trim() || "Group",
+    archived: group?.archived === true,
     data: normalizeGroupData(group?.data),
   };
 
   g.data.periods = g.data.periods.map((p) => ({
     ...p,
     id: uuid(),
-    rows: p.rows.map((r) => ({ ...r, id: uuid() })),
+    rows: (p.rows || []).map((r) => ({
+      ...r,
+      id: uuid(),
+    })),
   }));
 
   return g;
@@ -242,11 +246,12 @@ function mergeAppState(incomingState) {
   }
 
   const mergeTotals = {
-    groupsAdded: 0,
-    periodsAdded: 0,
-    rowsAdded: 0,
-    rowsSkipped: 0
-  };
+  groupsAdded: 0,
+  periodsAdded: 0,
+  rowsAdded: 0,
+  rowsSkipped: 0,
+  ratesChanged: 0
+};
 
   incoming.groups.forEach((incomingGroup) => {
     const existing = appState.groups.find((g) => {
@@ -321,10 +326,16 @@ function mergeAppState(incomingState) {
     });
 
     const incomingRate = clampRate(
-      incomingGroup?.data?.defaultRatePercent ?? existing.data.defaultRatePercent
-    );
+  incomingGroup?.data?.defaultRatePercent ?? existing.data.defaultRatePercent
+);
 
-    existing.data.defaultRatePercent = incomingRate;
+const oldRate = existing.data.defaultRatePercent;
+
+if (oldRate !== incomingRate) {
+  mergeTotals.ratesChanged++;
+}
+
+existing.data.defaultRatePercent = incomingRate;
   });
 
   appState = normalizeAppState(appState);

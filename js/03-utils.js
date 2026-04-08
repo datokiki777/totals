@@ -46,30 +46,50 @@ function animateNumber(el, to, duration = 380) {
 }
 
 function parseMoney(value) {
-  if (value == null) return 0;
+  if (value === null || value === undefined) return NaN;
 
   let s = String(value).trim();
-  if (!s) return 0;
 
-  s = s.replace(/\s+/g, "");
+  if (!s) return NaN;
 
-  const lastComma = s.lastIndexOf(",");
-  const lastDot = s.lastIndexOf(".");
+  // წაშალე space-ები
+  s = s.replace(/\s/g, "");
 
-  if (lastComma !== -1 && lastDot !== -1) {
-    if (lastComma > lastDot) {
-      s = s.replace(/\./g, "").replace(",", ".");
+  // თუ ორივე არის , და .
+  if (s.includes(",") && s.includes(".")) {
+    // განსაზღვრე ბოლო separator (decimal)
+    if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+      // ევროპული ფორმატი: 1.234,56
+      s = s.replace(/\./g, "");
+      s = s.replace(",", ".");
     } else {
+      // ამერიკული: 1,234.56
       s = s.replace(/,/g, "");
     }
-  } else if (lastComma !== -1 && lastDot === -1) {
-    s = s.replace(",", ".");
-  } else {
-    s = s.replace(/,/g, "");
+  } else if (s.includes(",")) {
+    // მარტო მძიმეა
+    const parts = s.split(",");
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // decimal: 123,45
+      s = s.replace(",", ".");
+    } else {
+      // ათასის გამყოფი: 1,234
+      s = s.replace(/,/g, "");
+    }
+  } else if (s.includes(".")) {
+    const parts = s.split(".");
+
+    if (parts.length > 2) {
+      // 1.234.567 → remove all dots
+      s = s.replace(/\./g, "");
+    } else if (parts.length === 2 && parts[1].length === 3) {
+      // 1.234 → thousands separator
+      s = s.replace(".", "");
+    }
   }
 
-  const num = Number(s);
-  return Number.isFinite(num) ? num : 0;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
 }
 
 function clampRate(percent) {

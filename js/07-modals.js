@@ -139,19 +139,36 @@ function askConfirm(message, title = "Confirm", options = {}) {
     confirmBackdrop.style.display = "flex";
     history.pushState({ modal: "confirm" }, "");
 
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        cancelConfirm();
+        return;
+      }
+
+      if (singleButton && (e.key === "Enter" || e.key === " ")) {
+        cleanup();
+        resolve(true);
+      }
+    };
+
     const cleanup = () => {
       confirmBackdrop.style.display = "none";
       confirmNoBtn.style.display = "";
       confirmNoBtn.onclick = null;
       confirmYesBtn.onclick = null;
       confirmBackdrop.onclick = null;
-      document.onkeydown = null;
+      document.removeEventListener("keydown", onKeyDown);
+      window.__closeConfirmModal = null;
     };
 
-    confirmNoBtn.onclick = () => {
+    const cancelConfirm = () => {
       cleanup();
       resolve(false);
     };
+
+    window.__closeConfirmModal = cancelConfirm;
+
+    confirmNoBtn.onclick = cancelConfirm;
 
     confirmYesBtn.onclick = () => {
       cleanup();
@@ -160,21 +177,11 @@ function askConfirm(message, title = "Confirm", options = {}) {
 
     confirmBackdrop.onclick = (e) => {
       if (e.target === confirmBackdrop) {
-        cleanup();
-        resolve(false);
+        cancelConfirm();
       }
     };
 
-    document.onkeydown = (e) => {
-      if (e.key === "Escape") {
-        cleanup();
-        resolve(false);
-      }
-      if (singleButton && (e.key === "Enter" || e.key === " ")) {
-        cleanup();
-        resolve(true);
-      }
-    };
+    document.addEventListener("keydown", onKeyDown);
   });
 }
 
@@ -200,12 +207,25 @@ function askText(title, message, defaultValue = "", okLabel = "Save") {
     textPromptModal.style.display = "flex";
     history.pushState({ modal: "textPrompt" }, "");
 
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        cancel();
+        return;
+      }
+
+      if (e.key === "Enter") {
+        submit();
+      }
+    };
+
     const cleanup = () => {
       textPromptModal.style.display = "none";
       textPromptCancel.onclick = null;
       textPromptOk.onclick = null;
       textPromptModal.onclick = null;
-      document.onkeydown = null;
+      document.removeEventListener("keydown", onKeyDown);
+      // FIX: cleanup-ში global reference ნულდება
+      window.__closeTextPromptModal = null;
     };
 
     const submit = () => {
@@ -219,6 +239,9 @@ function askText(title, message, defaultValue = "", okLabel = "Save") {
       resolve("");
     };
 
+    // FIX: popstate-ისთვის global cancel reference
+    window.__closeTextPromptModal = cancel;
+
     textPromptCancel.onclick = cancel;
     textPromptOk.onclick = submit;
 
@@ -226,10 +249,7 @@ function askText(title, message, defaultValue = "", okLabel = "Save") {
       if (e.target === textPromptModal) cancel();
     };
 
-    document.onkeydown = (e) => {
-      if (e.key === "Escape") cancel();
-      if (e.key === "Enter") submit();
-    };
+    document.addEventListener("keydown", onKeyDown);
 
     setTimeout(() => {
       textPromptInput.focus();

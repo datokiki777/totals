@@ -6,20 +6,70 @@
 ========================= */
 
 function calcPeriodTotals(period, ratePercent) {
-  const gross = period.rows.reduce((sum, r) => sum + parseMoney(r.gross), 0);
-  const net = period.rows.reduce((sum, r) => sum + parseMoney(r.net), 0);
-  const my = net * (clampRate(ratePercent) / 100);
+  const rows = period?.rows || [];
+  const rate = clampRate(ratePercent) / 100;
+
+  let gross = 0;
+  let net = 0;
+  let my = 0;
+
+  rows.forEach((r) => {
+    const grossRaw = String(r?.gross ?? "").trim();
+    const netRaw = String(r?.net ?? "").trim();
+
+    const hasGross = grossRaw !== "";
+    const hasNet = netRaw !== "";
+
+    // ორივე ცარიელია → საერთოდ skip
+    if (!hasGross && !hasNet) return;
+
+    const grossVal = hasGross ? parseMoney(grossRaw) : 0;
+    const netVal = hasNet ? parseMoney(netRaw) : 0;
+
+    if (Number.isFinite(grossVal)) gross += grossVal;
+    if (Number.isFinite(netVal)) net += netVal;
+
+    // My €
+    let base = 0;
+    if (hasNet && Number.isFinite(netVal)) {
+      base = netVal;
+    } else if (hasGross && Number.isFinite(grossVal)) {
+      base = grossVal;
+    }
+
+    my += base * rate;
+  });
+
   return { gross, net, my };
 }
 
 function calcEditPeriodMyOnly(period, ratePercent) {
+  const rows = period?.rows || [];
   const rate = clampRate(ratePercent) / 100;
 
-  const my = (period.rows || []).reduce((sum, r) => {
-    const hasNet = String(r?.net ?? "").trim() !== "";
-    const base = hasNet ? parseMoney(r.net) : parseMoney(r.gross);
-    return sum + (base * rate);
-  }, 0);
+  let my = 0;
+
+  rows.forEach((r) => {
+    const grossRaw = String(r?.gross ?? "").trim();
+    const netRaw = String(r?.net ?? "").trim();
+
+    const hasGross = grossRaw !== "";
+    const hasNet = netRaw !== "";
+
+    if (!hasGross && !hasNet) return;
+
+    const grossVal = hasGross ? parseMoney(grossRaw) : 0;
+    const netVal = hasNet ? parseMoney(netRaw) : 0;
+
+    let base = 0;
+    if (hasNet && Number.isFinite(netVal)) {
+      base = netVal;
+    } else if (hasGross && Number.isFinite(grossVal)) {
+      base = grossVal;
+    }
+
+    my += base * rate;
+  });
 
   return my;
 }

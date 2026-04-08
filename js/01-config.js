@@ -19,5 +19,8 @@ const BACKUP_REMINDER_LAST_SHOWN_KEY = "ct_backup_reminder_last_shown_week";
    PIN Constants
 ========================= */
 
+// NOTE:
+// This PIN is only a casual lock for convenience.
+// It is NOT real security, because client-side source code can be inspected.
 const APP_PIN = "369700";
 const PIN_VERIFIED_KEY = "ct_pin_verified_v1";

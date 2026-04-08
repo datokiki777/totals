@@ -30,6 +30,7 @@ function defaultAppState() {
     groups: [g1],
     workspaceMode: "active",
     grandMode: "active",
+    lastReviewGrandMode: "active",
     uiMode: "review",
   };
 }
@@ -68,14 +69,15 @@ function normalizeAppState(s) {
   const groups = Array.isArray(s?.groups) ? s.groups : [];
 
   const out = {
-    activeGroupId: s?.activeGroupId || "",
-    lastActiveGroupIdActive: s?.lastActiveGroupIdActive || "",
-    lastActiveGroupIdArchive: s?.lastActiveGroupIdArchive || "",
-    groups: [],
-    workspaceMode: s?.workspaceMode === "archive" ? "archive" : "active",
-    grandMode: s?.grandMode === "all" ? "all" : s?.grandMode === "archived" ? "archived" : "active",
-    uiMode: s?.uiMode === "edit" ? "edit" : "review",
-  };
+  activeGroupId: s?.activeGroupId || "",
+  lastActiveGroupIdActive: s?.lastActiveGroupIdActive || "",
+  lastActiveGroupIdArchive: s?.lastActiveGroupIdArchive || "",
+  groups: [],
+  workspaceMode: s?.workspaceMode === "archive" ? "archive" : "active",
+  grandMode: s?.grandMode === "all" ? "all" : s?.grandMode === "archived" ? "archived" : "active",
+  lastReviewGrandMode: s?.lastReviewGrandMode === "all" ? "all" : "active",
+  uiMode: s?.uiMode === "edit" ? "edit" : "review",
+};
 
   out.groups = (groups.length ? groups : defaultAppState().groups).map((g) => ({
     id: g?.id || uuid(),
