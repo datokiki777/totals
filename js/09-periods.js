@@ -169,6 +169,23 @@ function calcGroupStatusCounts(group) {
   return { done, fail, fixed };
 }
 
+function calcStatusCountsByMode(mode = appState.grandMode) {
+  let done = 0;
+  let fail = 0;
+  let fixed = 0;
+
+  const groups = getGroupsByMode(mode);
+
+  groups.forEach((group) => {
+    const counts = calcGroupStatusCounts(group);
+    done += counts.done;
+    fail += counts.fail;
+    fixed += counts.fixed;
+  });
+
+  return { done, fail, fixed };
+}
+
 function calcOverallStatusCounts() {
   let done = 0;
   let fail = 0;

@@ -120,7 +120,7 @@ function renderMonthlyStats() {
   const keys = getAllMonthKeysForMode(appState.grandMode);
   const currentKey = getCurrentMonthKey(appState.grandMode);
   const totals = calcMonthlyTotals(currentKey, appState.grandMode);
-  const status = calcMonthlyStatus(currentKey, appState.grandMode);
+  const status = calcStatusCountsByMode(appState.grandMode);
 
   const doneEl = document.getElementById("monthDone");
   const failEl = document.getElementById("monthFail");
