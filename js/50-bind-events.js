@@ -204,6 +204,21 @@ fabAddClient?.addEventListener("click", () => {
 });
 
 /* =========================
+   Review Group Collapse Toggle
+========================= */
+
+reviewView?.addEventListener("click", async (e) => {
+  const toggleBtn = e.target.closest("[data-review-group-toggle]");
+  if (!toggleBtn) return;
+
+  const groupId = toggleBtn.getAttribute("data-review-group-toggle");
+  if (!groupId) return;
+
+  await toggleReviewGroupCollapsed(groupId);
+  renderReview();
+});
+
+/* =========================
    Status List Modal Close
 ========================= */
 

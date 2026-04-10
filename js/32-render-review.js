@@ -7,7 +7,6 @@ function renderReview() {
 
   const groupsToShow = getGroupsByMode();
 
-  // Empty state
   if (groupsToShow.length === 0) {
     const emptyMessage =
       appState.workspaceMode === "archive"
@@ -50,6 +49,7 @@ function renderReview() {
     );
 
     const statusCounts = calcGroupStatusCounts(g);
+    const collapsed = isReviewGroupCollapsed(g.id);
 
     const statusBadgesHtml = `
       ${statusCounts.done > 0 ? `<span class="badge-done">${statusCounts.done}</span>` : ""}
@@ -57,97 +57,116 @@ function renderReview() {
       ${statusCounts.fixed > 0 ? `<span class="badge-fixed">${statusCounts.fixed}</span>` : ""}
     `;
 
-    fullHtml += `
-      <section class="review-card ${colorClass}" style="${g.archived ? 'opacity:0.7;' : ''}">
-        <div class="review-head">
-          <div>
-            <h3 class="review-title">${escapeHtml(g.name)}${g.archived ? ' 📦' : ''} — Review</h3>
-            <div class="review-sub">${groupTotals.periods} periods • ${groupTotals.clients} rows • Default ${fmt(st.defaultRatePercent)}%</div>
-          </div>
+    let periodsHtml = "";
 
-          ${statusBadgesHtml.trim() ? `
-            <div class="month-badges">
-              ${statusBadgesHtml}
+    if (!collapsed) {
+      st.periods.forEach((p) => {
+        const t = calcPeriodTotals(p, st.defaultRatePercent);
+        const from = formatDateLocal(p.from) || "—";
+        const to = formatDateLocal(p.to) || "—";
+
+        const clients = p.rows.map((r) => {
+          const name = r.customer?.trim() || "Client";
+          const city = r.city?.trim() || "—";
+          const state = ["none", "done", "fail", "fixed"].includes(r.done) ? r.done : "none";
+
+          let statusHtml = "";
+          if (state === "done") {
+            statusHtml = `<span class="review-status review-status-done">Done</span>`;
+          } else if (state === "fail") {
+            statusHtml = `<span class="review-status review-status-fail">Fail</span>`;
+          } else if (state === "fixed") {
+            statusHtml = `<span class="review-status review-status-fixed">Fixed</span>`;
+          }
+
+          return `
+            <div class="client-item">
+              <div>
+                <div class="client-name-row">
+                  <div class="client-name">${g.archived ? '📦 ' : ''}${escapeHtml(name)}</div>
+                  ${statusHtml}
+                </div>
+                <div class="review-sub" style="margin:2px 0 0 0;">City: <b>${escapeHtml(city)}</b></div>
+              </div>
+              <div class="client-values">
+                <span>Gross:</span> <b>${fmt(parseMoney(r.gross))}</b>
+                <span>Net:</span> <b>${fmt(parseMoney(r.net))}</b>
+              </div>
             </div>
-          ` : ``}
-        </div>
+          `;
+        }).join("");
 
-        <div class="review-kpis">
-          <div class="kpi">
-            <div class="kpi-label">Gross</div>
-            <div class="kpi-value">${fmt(groupTotals.gross)}</div>
+        periodsHtml += `
+          <details class="period-card ${colorClass}">
+            <summary>
+              <div class="period-meta">
+                <div class="period-range">${escapeHtml(from)} → ${escapeHtml(to)}</div>
+                <div class="period-mini">${p.rows.length} clients</div>
+              </div>
+
+              <div class="period-sum">
+                <span class="badge">Gross: <b>${fmt(t.gross)}</b></span>
+                <span class="badge">Net: <b>${fmt(t.net)}</b></span>
+                <span class="badge">My €: <b>${fmt(t.my)}</b></span>
+              </div>
+            </summary>
+
+            <div class="period-body">
+              <div class="client-list">
+                ${clients || `<div class="hint">No clients.</div>`}
+              </div>
+            </div>
+          </details>
+        `;
+      });
+    }
+
+    fullHtml += `
+      <section class="review-card ${colorClass} ${collapsed ? "is-collapsed" : "is-expanded"}" style="${g.archived ? 'opacity:0.7;' : ''}">
+        <button
+          type="button"
+          class="review-group-toggle"
+          data-review-group-toggle="${g.id}"
+          aria-expanded="${collapsed ? "false" : "true"}"
+        >
+          <div class="review-head review-head-collapsible">
+            <div class="review-head-main">
+              <h3 class="review-title">${escapeHtml(g.name)}${g.archived ? ' 📦' : ''} — Review</h3>
+              <div class="review-sub">${groupTotals.periods} periods • ${groupTotals.clients} rows • Default ${fmt(st.defaultRatePercent)}%</div>
+            </div>
+
+            <div class="review-head-side">
+  ${statusBadgesHtml.trim() ? `
+    <div class="month-badges">
+      ${statusBadgesHtml}
+    </div>
+  ` : ``}
+</div>
           </div>
-          <div class="kpi">
-            <div class="kpi-label">Net</div>
-            <div class="kpi-value">${fmt(groupTotals.net)}</div>
+        </button>
+
+        ${collapsed ? "" : `
+          <div class="review-group-body">
+            <div class="review-kpis">
+              <div class="kpi">
+                <div class="kpi-label">Gross</div>
+                <div class="kpi-value">${fmt(groupTotals.gross)}</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Net</div>
+                <div class="kpi-value">${fmt(groupTotals.net)}</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">My €</div>
+                <div class="kpi-value">${fmt(groupTotals.my)}</div>
+              </div>
+            </div>
+
+            ${periodsHtml}
           </div>
-          <div class="kpi">
-            <div class="kpi-label">My €</div>
-            <div class="kpi-value">${fmt(groupTotals.my)}</div>
-          </div>
-        </div>
+        `}
       </section>
     `;
-
-    st.periods.forEach((p) => {
-      const t = calcPeriodTotals(p, st.defaultRatePercent);
-      const from = formatDateLocal(p.from) || "—";
-      const to = formatDateLocal(p.to) || "—";
-
-      const clients = p.rows.map((r) => {
-        const name = r.customer?.trim() || "Client";
-        const city = r.city?.trim() || "—";
-        const state = ["none", "done", "fail", "fixed"].includes(r.done) ? r.done : "none";
-
-        let statusHtml = "";
-        if (state === "done") {
-          statusHtml = `<span class="review-status review-status-done">Done</span>`;
-        } else if (state === "fail") {
-          statusHtml = `<span class="review-status review-status-fail">Fail</span>`;
-        } else if (state === "fixed") {
-          statusHtml = `<span class="review-status review-status-fixed">Fixed</span>`;
-        }
-
-        return `
-          <div class="client-item">
-            <div>
-              <div class="client-name-row">
-                <div class="client-name">${g.archived ? '📦 ' : ''}${escapeHtml(name)}</div>
-                ${statusHtml}
-              </div>
-              <div class="review-sub" style="margin:2px 0 0 0;">City: <b>${escapeHtml(city)}</b></div>
-            </div>
-            <div class="client-values">
-              <span>Gross:</span> <b>${fmt(parseMoney(r.gross))}</b>
-              <span>Net:</span> <b>${fmt(parseMoney(r.net))}</b>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      fullHtml += `
-        <details class="period-card ${colorClass}">
-          <summary>
-            <div class="period-meta">
-              <div class="period-range">${escapeHtml(from)} → ${escapeHtml(to)}</div>
-              <div class="period-mini">${p.rows.length} clients</div>
-            </div>
-
-            <div class="period-sum">
-              <span class="badge">Gross: <b>${fmt(t.gross)}</b></span>
-              <span class="badge">Net: <b>${fmt(t.net)}</b></span>
-              <span class="badge">My €: <b>${fmt(t.my)}</b></span>
-            </div>
-          </summary>
-
-          <div class="period-body">
-            <div class="client-list">
-              ${clients || `<div class="hint">No clients.</div>`}
-            </div>
-          </div>
-        </details>
-      `;
-    });
   });
 
   reviewView.innerHTML = fullHtml;

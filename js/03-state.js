@@ -20,6 +20,7 @@ function defaultAppState() {
     grandMode: "active",
     lastReviewGrandMode: "active",
     uiMode: "review",
+    reviewCollapsedGroups: {}
   };
 }
 
@@ -69,6 +70,10 @@ function normalizeAppState(s) {
     grandMode: s?.grandMode === "all" ? "all" : "active",
     lastReviewGrandMode: s?.lastReviewGrandMode === "all" ? "all" : "active",
     uiMode: s?.uiMode === "edit" ? "edit" : "review",
+    reviewCollapsedGroups:
+  s?.reviewCollapsedGroups && typeof s.reviewCollapsedGroups === "object"
+    ? s.reviewCollapsedGroups
+    : {},
   };
   out.groups = (groups.length ? groups : defaultAppState().groups).map((g) => ({
     id: g?.id || uuid(),
@@ -135,6 +140,24 @@ others.reverse();
 
 // საბოლოო სია
 return current ? [current, ...others] : others;
+}
+
+function isReviewGroupCollapsed(groupId) {
+  const state = getAppState();
+  return state.reviewCollapsedGroups?.[groupId] !== false;
+}
+
+async function toggleReviewGroupCollapsed(groupId) {
+  const state = getAppState();
+
+  if (!state.reviewCollapsedGroups || typeof state.reviewCollapsedGroups !== "object") {
+    state.reviewCollapsedGroups = {};
+  }
+
+  const isCollapsedNow = state.reviewCollapsedGroups[groupId] !== false;
+  state.reviewCollapsedGroups[groupId] = !isCollapsedNow;
+
+  await saveState();
 }
 
 function isDefaultEmptyGroup(g) {
