@@ -34,6 +34,7 @@ async function addGroup() {
 
   appState.groups.push(g);
   appState.activeGroupId = g.id;
+  cleanupDefaultGroup();
   appState.lastActiveGroupIdActive = g.id;
   await saveState();
 
@@ -336,6 +337,7 @@ function mergeAppState(incomingState) {
     existing.data.defaultRatePercent = incomingRate;
   });
 
+  cleanupDefaultGroup();
   appState = normalizeAppState(appState);
   return mergeTotals;
 }

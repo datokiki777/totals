@@ -136,3 +136,52 @@ others.reverse();
 // საბოლოო სია
 return current ? [current, ...others] : others;
 }
+
+function isDefaultEmptyGroup(g) {
+  if (!g) return false;
+
+  // სახელი default-ის მსგავსი
+  const name = (g.name || "").toLowerCase().trim();
+  if (!name.startsWith("group")) return false;
+
+  const periods = g?.data?.periods || [];
+  if (periods.length !== 1) return false;
+
+  const rows = periods[0]?.rows || [];
+  if (rows.length !== 1) return false;
+
+  const r = rows[0];
+
+  // ყველა ველი ცარიელია
+  const isEmpty =
+    !r.customer &&
+    !r.city &&
+    !r.gross &&
+    !r.net &&
+    (!r.done || r.done === "none");
+
+  return isEmpty;
+}
+
+function cleanupDefaultGroup() {
+  const state = getAppState();
+
+  if (!state.groups || state.groups.length <= 1) return;
+
+  const defaultGroup = state.groups.find(isDefaultEmptyGroup);
+
+  if (!defaultGroup) return;
+
+  // თუ სხვა ჯგუფებიც არსებობს → წაშალე
+  const realGroups = state.groups.filter(g => g.id !== defaultGroup.id);
+
+  if (realGroups.length === 0) return;
+
+  state.groups = realGroups;
+
+  // activeGroup თუ default იყო → გადაიყვანე რეალურზე
+  if (state.activeGroupId === defaultGroup.id) {
+    state.activeGroupId = realGroups[0].id;
+    state.lastActiveGroupIdActive = realGroups[0].id;
+  }
+}

@@ -8,7 +8,16 @@ async function renderMonthlyStats() {
   const currentKey = await getCurrentMonthKey(appState.grandMode);
   const totals = calcMonthlyTotals(currentKey, appState.grandMode);
   // status badges: მხოლოდ currentKey თვის rows-ები (overlap-ით)
-  const status = calcMonthlyStatus(currentKey, appState.grandMode);
+  let status;
+
+if (appState.grandMode === "active") {
+  const current = activeGroup();
+  status = current
+    ? calcGroupStatusCounts(current)
+    : { done: 0, fail: 0, fixed: 0 };
+} else {
+  status = calcOverallStatusCounts();
+}
 
   const doneEl = document.getElementById("monthDone");
   const failEl = document.getElementById("monthFail");

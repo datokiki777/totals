@@ -117,6 +117,7 @@ async function handleImportJsonChange(e) {
     if (!doReplace) return;
 
     appState = normalizeAppState(incoming);
+    cleanupDefaultGroup();
     await saveState();
     render();
     if (appState.uiMode === "review") renderReview();
