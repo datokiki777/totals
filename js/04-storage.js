@@ -270,3 +270,25 @@ async function getCurrentMonthKey(mode) {
 
   return keys[keys.length - 1];
 }
+
+/* =========================
+   Data & Backup Meta
+========================= */
+
+const BACKUP_META_KEY = "ct_backup_meta";
+
+async function getBackupMeta() {
+  try {
+    return (await dbGet(BACKUP_META_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+async function setBackupMeta(meta) {
+  try {
+    await dbSet(BACKUP_META_KEY, meta || {});
+  } catch (error) {
+    console.error("Failed to save backup meta:", error);
+  }
+}

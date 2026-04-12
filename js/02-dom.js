@@ -85,4 +85,18 @@ const pinLockInput = document.getElementById("pinLockInput");
 const pinUnlockBtn = document.getElementById("pinUnlockBtn");
 const pinLockError = document.getElementById("pinLockError");
 
+const dataBackupBtn = document.getElementById("dataBackupBtn");
+const dataBackupModal = document.getElementById("dataBackupModal");
+const dataBackupClose = document.getElementById("dataBackupClose");
+
+const dbStorageEl = document.getElementById("dbStorage");
+const dbActiveEl = document.getElementById("dbActive");
+const dbArchiveEl = document.getElementById("dbArchive");
+const dbLastBackupEl = document.getElementById("dbLastBackup");
+const dbCountEl = document.getElementById("dbCount");
+const dbStatusEl = document.getElementById("dbStatus");
+
+const createBackupBtn = document.getElementById("createBackupBtn");
+const restoreBackupBtn = document.getElementById("restoreBackupBtn");
+
 let bodyOverflowBeforePinLock = "";

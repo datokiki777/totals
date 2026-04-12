@@ -46,6 +46,16 @@ async function handleExportJson() {
   } catch (error) {
     console.error("Failed to clear backup reminder flag:", error);
   }
+  
+  // Save backup meta
+  try {
+    const meta = await getBackupMeta();
+    meta.lastBackupAt = new Date().toISOString();
+    meta.count = (meta.count || 0) + 1;
+    await setBackupMeta(meta);
+  } catch (error) {
+    console.error("Failed to update backup meta:", error);
+  }
 
   await askConfirm(
     "JSON exported successfully.",

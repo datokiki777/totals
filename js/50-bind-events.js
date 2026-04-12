@@ -277,4 +277,46 @@ window.addEventListener("popstate", () => {
     closeStatusListModal();
     return;
   }
+
+  // dataBackupModal
+  if (dataBackupModal && dataBackupModal.style.display === "flex") {
+    dataBackupModal.style.display = "none";
+    return;
+  }  
+});
+
+/* =========================
+   Data & Backup Modal
+========================= */
+
+dataBackupBtn?.addEventListener("click", async () => {
+  // close top menu first
+  if (typeof closeTopMenu === "function") {
+    closeTopMenu();
+  } else {
+    topMenuBackdrop.style.display = "none";
+  }
+
+  await updateDataBackupInfo();
+  dataBackupModal.style.display = "flex";
+});
+
+dataBackupClose?.addEventListener("click", () => {
+  dataBackupModal.style.display = "none";
+});
+
+dataBackupModal?.addEventListener("click", (e) => {
+  if (e.target === dataBackupModal) {
+    dataBackupModal.style.display = "none";
+  }
+});
+
+createBackupBtn?.addEventListener("click", async () => {
+  dataBackupModal.style.display = "none";
+  await handleExportJson();
+});
+
+restoreBackupBtn?.addEventListener("click", () => {
+  dataBackupModal.style.display = "none";
+  menuImportJsonInput?.click();
 });
