@@ -40,6 +40,11 @@
 - textPromptInput, textPromptCancel, textPromptOk
 - pinLockModal, pinLockInput, pinUnlockBtn, pinLockError
 - bodyOverflowBeforePinLock
+- Data & Backup DOM refs:
+- dataBackupBtn, dataBackupModal, dataBackupClose
+- dbStorageEl, dbActiveEl, dbArchiveEl
+- dbLastBackupEl, dbCountEl, dbStatusEl
+- createBackupBtn, restoreBackupBtn
 
 ═══════════════════════════════════════
 03-state.js
@@ -73,6 +78,9 @@
 - Backup reminder: markBackupReminderDirty()
 - shouldShowBackupReminder(), getWeekKeyForReminder()
 - isBackupReminderWindow()
+- Data & Backup meta:
+- BACKUP_META_KEY
+- getBackupMeta(), setBackupMeta()
 
 ═══════════════════════════════════════
 05-utils-core.js
@@ -166,11 +174,13 @@
 ═══════════════════════════════════════
 - handleExportJson(), handleImportJsonChange()
   → JSON replace imports call cleanupDefaultGroup()
+  → JSON export updates backup meta (lastBackupAt, count)
 - handleExportExcel(), handleImportExcelChange()
   → Excel replace imports call cleanupDefaultGroup()
 - handleExportPdf(), exportPdfAllGroups()
 - downloadJson(), nowStamp()
-- ⚠️ Storage indicator REMOVED (IndexedDB doesn't need it)
+- JSON menu buttons hidden from top menu UI
+  → JSON backup/restore now opened via Data & Backup modal
 
 ═══════════════════════════════════════
 15-theme.js
@@ -248,6 +258,12 @@ CENTRAL UI SYNC:
 - refreshFullUiState()
   - refreshUiChrome()
   - updateAfterGlobalChange()
+  - updateDataBackupInfo()
+  - Used Storage via navigator.storage.estimate() fallback
+  - Active counts: groups / periods / rows
+  - Archive counts: groups / periods / rows
+  - Last backup / backup count
+  - Backup status color sync
 
 ═══════════════════════════════════════
 40-update-flow.js
@@ -274,6 +290,12 @@ GLOBAL EVENT LISTENERS:
 - Review group collapse toggle
 - Status list modal close
 - Keyboard detection, back button (popstate)
+- Data & Backup modal:
+- open / close handlers
+- closes top menu before opening
+- Backup button → handleExportJson()
+- Restore button → menuImportJsonInput.click()
+- popstate close support
 
 ═══════════════════════════════════════
 60-app-init.js

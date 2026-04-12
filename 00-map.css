@@ -57,6 +57,14 @@
 - .modal-actions
 - .group-picker-modal
 - .pin-lock (PIN screen)
+- Data & Backup modal styles
+- backup-info-list / backup-info-row
+- backup-info-left / backup-info-fill / backup-info-right
+- backup-actions-card / backup-actions-grid
+- backup-status-safe / backup-status-old / backup-status-none
+- data-backup-menu-btn
+- data-backup-menu-icon
+- data-backup-menu-title
 3
 
 ---
@@ -105,6 +113,8 @@
 - workspace-switch (light)
 - top-menu (light)
 - controlsToggle (light)
+- Light theme overrides for Data & Backup modal
+- Light theme overrides for data-backup-menu-btn
 7
 
 ---
