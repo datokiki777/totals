@@ -1,627 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- =========================
+       Meta
+  ========================= -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Client Period Totals</title>
-  <link rel="stylesheet" href="css/01-base.css" />
-<link rel="stylesheet" href="css/02-layout.css" />
-<link rel="stylesheet" href="css/03-components.css" />
-<link rel="stylesheet" href="css/04-modals.css" />
-<link rel="stylesheet" href="css/05-forms.css" />
-<link rel="stylesheet" href="css/06-responsive.css" />
-<link rel="stylesheet" href="css/07-print.css" />
-<link rel="stylesheet" href="css/08-theme.css" />
-<link rel="stylesheet" href="css/09-effects.css" />
-<link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0b1220" id="themeColorMeta" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
+  <!-- =========================
+       Title
+  ========================= -->
+  <title>ACC</title>
+
+  <!-- =========================
+       PWA / Theme
+  ========================= -->
+  <meta name="theme-color" content="#071633" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ACC" />
   <meta name="mobile-web-app-capable" content="yes" />
 
-<!-- REMOVED: inline localStorage preload script -->
-<!-- Theme and UI state are now loaded asynchronously via IndexedDB -->
-<script>
-  // Only set preload class and default theme to prevent flash
-  (function () {
-    try {
-      const root = document.documentElement;
-      root.classList.add("app-preload");
-      
-      // Set default dark theme to prevent flash, will be updated after IndexedDB loads
-      root.setAttribute("data-theme", "dark");
-      
-      // No localStorage reads here - will be handled by initThemeAsync()
-    } catch (e) {}
-  })();
-</script>
+  <!-- =========================
+       Assets
+  ========================= -->
+  <link rel="stylesheet" href="css/01-base.css" />
+  <link rel="stylesheet" href="css/02-layout.css" />
+  <link rel="stylesheet" href="css/03-components.css" />
+  <link rel="stylesheet" href="css/04-modals.css" />
+  <link rel="stylesheet" href="css/05-forms.css" />
+  <link rel="stylesheet" href="css/06-sections.css" />
+  <link rel="stylesheet" href="css/07-effects.css" />
+  <link rel="stylesheet" href="css/08-responsive.css" />
+  <link rel="stylesheet" href="css/09-theme.css" />
 
+  <link rel="manifest" href="manifest.json" />
+
+  <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="./icons/icon-167.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png" />
 </head>
+<body>
+  <div class="app">
 
-<body class="booting">
+    <!-- =========================
+         Topbar
+    ========================= -->
+    <header class="topbar">
+      <div class="topbar-main-row">
+        <button class="icon-btn" id="menuBtn" aria-label="Import / Export">⇄</button>
 
-     <div id="splash">
-          <div class="loader-ring"></div>
-           <div class="loader-bar">
-           <div class="loader-bar-fill"></div>
-         </div>
-       </div>
-       
-       <header class="topbar">
-       <div class="workspace-bar">
-  <div class="workspace-switch-wrap">
-    <div class="workspace-switch">
-      <button id="workspaceActiveBtn" class="workspace-btn active" type="button">Active</button>
-      <button id="workspaceArchiveBtn" class="workspace-btn" type="button">Archive</button>
-    </div>
-
-    <button id="topMenuBtn" class="top-menu-btn" type="button" aria-label="Open menu" title="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-  </div>
-</div>
-     <div class="mode-toggle">
-    <div class="mode-switch">
-    <button id="modeEditBtn" class="btn small">Edit</button>
-    <button id="modeReviewBtn" class="btn small">Review</button>
-  </div>
-
-  <button id="controlsToggle" class="btn small">⚙ Controls</button>
-
-  <label class="theme-switch" title="Theme">
-    <input id="themeSwitch" type="checkbox">
-    <span class="slider"></span>
-    <span class="icon moon">🌙</span>
-    <span class="icon sun">☀️</span>
-  </label>
-</div>
-
-    <!-- Controls -->
-    <div class="controls">
-      <!-- LEFT SIDE: Groups + Default -->
-      <div class="actions-left">
-        <!-- GROUPS -->
-        <label class="field group-field">
-          <span>Group</span>
-          <div class="group-row">
-            <button id="groupPickerBtn" class="select-like-btn" type="button">
-              <span id="groupPickerBtnText">Select group</span>
-              <span class="select-like-arrow">▾</span>
-            </button>
-
-            <button id="addGroupBtn" class="btn small primary">+ Group</button>
-
-            <div class="group-side-actions">
-              <button id="renameGroupBtn" class="btn small">Rename</button>
-              <button id="deleteGroupBtn" class="btn small danger">Del</button>
-            </div>
-
-            <button id="archiveGroupBtn" class="btn small" title="Archive / Unarchive group">📦</button>
-          </div>
-        </label>
-
-        <label class="field">
-          <span>Default %</span>
-          <input id="defaultRate" type="number" step="0.01" min="0" max="100" value="13.5" autocomplete="off" />
-        </label>
-      </div>
-
-      <!-- RIGHT SIDE: Actions -->
-      <div class="actions-right">
-        <!-- EDIT MODE ACTIONS (visible only in edit mode) -->
-        <div class="btn-row edit-actions">
-          <button id="addPeriodBtn" class="btn primary">+ New Period</button>
-          <button id="resetBtn" class="btn danger">Reset</button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="summary card">
-  <div class="summary-head">
-    <button id="summaryCollapseBtn" class="summary-title-btn" type="button">
-      <span>📊 Overview</span>
-      <span id="summaryCollapseIcon" class="summary-collapse-icon">▾</span>
-    </button>
-
-    <div class="toggle">
-  <button id="totalsActiveBtn" class="toggle-btn active">Current</button>
-  <button id="totalsAllBtn" class="toggle-btn">All</button>
-</div>
-  </div>
-
-  <div id="summaryBody" class="summary-body">
-  <div class="summary-grid">
-    <div class="kpi">
-      <div class="kpi-label">Gross</div>
-      <div class="kpi-value" id="grandGross">0.00</div>
-    </div>
-
-    <div class="kpi">
-      <div class="kpi-label">Net</div>
-      <div class="kpi-value" id="grandNet">0.00</div>
-    </div>
-
-    <div class="kpi">
-      <div class="kpi-label">My €</div>
-      <div class="kpi-value" id="grandMy">0.00</div>
-    </div>
-  </div>
-
-  <div class="status-summary-row premium-status-row">
-  <span>Done / Fail / Fixed</span>
-  <div class="month-badges">
-    <span class="badge-done" id="monthDone" data-status="done">0</span>
-    <span class="badge-fail" id="monthFail" data-status="fail">0</span>
-    <span class="badge-fixed" id="monthFixed" data-status="fixed">0</span>
-  </div>
-</div>
-
-<div class="overview-date-box">
-  <div class="overview-date-row">
-    <span class="overview-date-label">Working period</span>
-
-    <div class="overview-duration" id="overviewDuration">
-      <span class="dur-months">0 m</span>
-      <span class="dur-days">0 d</span>
-    </div>
-
-    <span class="overview-date-value" id="overviewDateRange">—</span>
-  </div>
-</div>
-
-  <div class="monthly-stats">
-    <div class="monthly-head">
-      <div class="monthly-title">Monthly • Statistics</div>
-
-      <div class="month-nav">
-        <button id="monthPrevBtn" class="btn small" type="button">‹</button>
-        <div id="monthLabel" class="month-label">March 2026</div>
-        <button id="monthNextBtn" class="btn small" type="button">›</button>
-      </div>
-    </div>
-
-    <div class="monthly-grid">
-      <div class="month-row">
-        <span>Month Gross</span>
-        <b id="monthGross">0.00</b>
-      </div>
-
-      <div class="month-row">
-        <span>Month Net</span>
-        <b id="monthNet">0.00</b>
-      </div>
-
-      <div class="month-row">
-        <span>Month My €</span>
-        <b id="monthMy">0.00</b>
-      </div>
-    </div>
-  </div>
-</div>
-</section>
-
-    <!-- EDIT VIEW -->
-    <div id="editView">
-      <div id="periods"></div>
-    </div>
-
-    <!-- REVIEW VIEW -->
-    <div id="globalSearchCard" class="review-card global-search-card" hidden>
-  <div class="review-head">
-    <div class="review-search" style="width:100%;">
-      <input
-        id="reviewSearch"
-        class="review-search-input"
-        type="text"
-        placeholder="Search client (name or city)..."
-        autocomplete="off"
-      />
-      <div id="reviewSearchResults" class="review-search-results" style="display:none;"></div>
-         </div>
-      </div>
-     </div>
-    <div id="reviewView" hidden></div>
-
-    <footer class="footer">
-       <div>Saved locally on this device. Use Export/Import for backup.</div>
-    </footer>
-  </main>
-
-      <template id="periodTpl">
-  <section class="period card">
-    <div class="period-top">
-  <button class="period-collapse-btn" type="button">
-    <span class="period-collapse-title">Period</span>
-
-    <span class="period-collapse-meta">
-      <span class="period-group-preview">Group</span>
-      <span class="period-range-preview">— → —</span>
-    </span>
-
-       <span class="period-collapse-icon">▾</span>
-     </button>
-   </div>
-
-    <div class="period-body-wrap">
-      <div class="period-head">
-        <div class="period-title">
-          <h2>Period</h2>
-            <div class="period-group-box">Group</div>
-             <div class="period-dates">
-            <label class="field">
-              <span>From</span>
-              <input class="fromDate" type="date" autocomplete="off" />
-            </label>
-            <label class="field">
-              <span>To</span>
-              <input class="toDate" type="date" autocomplete="off" />
-            </label>
-          </div>
+        <div class="mode-switch topbar-mode-switch">
+          <button id="modePersonal" class="mode-btn active">Personal</button>
+          <button id="modeWork" class="mode-btn">Work</button>
         </div>
 
-        <div class="period-actions">
-          <button class="btn small primary addRow">+ Add client</button>
-          <button class="btn danger small removePeriod">Remove period</button>
-          <button class="btn small addPeriodInline">+ Add period</button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-             <th style="width: 30%">Customer</th>
-             <th style="width: 16%">Gross</th>
-             <th style="width: 16%">Net</th>
-             <th style="width: 16%">City</th>
-             <th class="done-head" style="width: 8%">Done</th>
-             <th style="width: 14%">Actions</th>
-          </tr>
-       </thead>
-
-          <tbody class="rows"></tbody>
-
-          <tfoot>
-             <tr class="total-row">
-              <td class="total-label">TOTAL</td>
-              <td class="total-gross">0.00</td>
-              <td class="total-net">0.00</td>
-            <td class="total-my">
-            <span class="pill">My €: <b class="my-eur">0.00</b></span>
-                    </td>
-                   <td></td>
-                 <td></td>
-              </tr>
-        </tfoot>
-          </table>
-      </div>
-    </div>
-  </section>
-</template>
-
-  <template id="rowTpl">
-    <tr>
-      <td>
-        <input
-  class="cust"
-  type="text"
-  placeholder="Client name"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="words"
-  spellcheck="false"
-/>
-      </td>
-
-      <td>
-        <input
-          class="gross"
-          type="text"
-          inputmode="decimal"
-          placeholder="0"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-        />
-      </td>
-
-      <td>
-        <input
-          class="net"
-          type="text"
-          inputmode="decimal"
-          placeholder="0"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-        />
-      </td>
-
-      <td>
-        <input
-  class="city"
-  type="text"
-  placeholder="City"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="words"
-  spellcheck="false"
-/>
-      </td>
-
-      <td class="done-cell">
-        <button class="doneBtn state-none" type="button" aria-label="Status"></button>
-      </td>
-
-      <td><button class="btn small ghost removeRow">Remove</button></td>
-    </tr>
-</template>
-
-  <!-- Scroll to top button (must be inside body) -->
-  <button id="toTopBtn" class="to-top" aria-label="Back to top">↑</button>
-  <button id="fabAddClient" class="btn primary fab-add-client">+ Add client</button>
-  
-  <!-- PIN Lock Modal -->
-<div id="pinLockModal" class="modal-backdrop pin-lock-backdrop" style="display:none;">
-  <div class="modal pin-lock-modal">
-    <div class="modal-title">Enter PIN</div>
-    <div class="modal-text">This device is not verified yet. Enter the 6-digit PIN to continue.</div>
-
-    <div style="margin-top:12px;">
-      <input
-        id="pinLockInput"
-        type="password"
-        inputmode="numeric"
-        maxlength="6"
-        class="review-search-input pin-lock-input"
-        placeholder="6-digit PIN"
-        autocomplete="new-password"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-      />
-    </div>
-
-    <div id="pinLockError" class="pin-lock-error" style="display:none;">
-      Wrong PIN. Try again.
-    </div>
-
-    <div class="modal-actions">
-      <button id="pinUnlockBtn" class="btn primary">Continue</button>
-    </div>
-  </div>
-</div>
-      
-      <!-- Top Menu -->
-<div id="topMenuBackdrop" class="top-menu-backdrop" style="display:none;">
-  <div id="topMenuPanel" class="top-menu-panel">
-
-    <!-- JSON (hidden, used by Data & Backup modal) -->
-    <button id="menuExportJsonBtn" type="button" hidden aria-hidden="true">Export JSON</button>
-    <input id="menuImportJsonInput" type="file" accept="application/json" hidden />
-
-    <!-- PDF -->
-    <button id="menuPdfBtn" class="top-menu-item menu-pdf" type="button">
-      Export PDF
-    </button>
-
-    <!-- Excel -->
-    <button id="menuExportExcelBtn" class="top-menu-item menu-excel" type="button">
-      Export Excel
-    </button>
-
-    <label class="top-menu-item menu-excel top-menu-file" for="menuImportExcelInput">
-      Import Excel
-    </label>
-    <input
-      id="menuImportExcelInput"
-      type="file"
-      accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-      hidden
-    />
-
-    <!-- Storage -->
-    <button id="dataBackupBtn" class="top-menu-item storage-box data-backup-menu-btn" type="button">
-  <span class="data-backup-menu-icon">💾</span>
-  <span class="data-backup-menu-title">Data & Backup</span>
+        <button class="theme-switch" id="themeToggleBtn" aria-label="Theme: Auto" title="Theme: Auto">
+  <span class="theme-icon" id="themeIcon">🌓</span>
 </button>
+      </div>
 
+      <div class="stats-bar" id="statsBar"></div>
+    </header>
+
+    <!-- =========================
+         Main Content
+    ========================= -->
+    <main>
+      <section class="people-list" id="peopleList">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">📒</div>
+          <div class="empty-title">No records yet</div>
+          <div class="empty-text">Tap the plus button below to add your first person.</div>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
-<div id="dataBackupModal" class="modal-backdrop" style="display:none;">
-  <div class="modal">
+  <!-- =========================
+       Floating Action Button
+  ========================= -->
+  <button class="fab" id="fab" aria-label="Add">+</button>
 
-    <div class="modal-title">💾 Data & Backup</div>
+  <!-- =========================
+       Legacy hidden elements
+       Kept for JS compatibility
+  ========================= -->
+  <div id="menuOverlay" style="display:none;"></div>
+  <button id="menuEditStages" style="display:none;"></button>
+  <button id="menuTransfer" style="display:none;"></button>
+  <button id="menuDelete" style="display:none;"></button>
+  <input type="file" id="importFile" accept="application/json" hidden />
 
-    <!-- Information -->
-    <div class="card backup-info-card" style="margin-top:10px; padding:14px;">
-      <div class="backup-info-list">
+  <!-- =========================
+       Main Modal
+  ========================= -->
+  <div class="overlay" id="modalOverlay">
+    <div class="sheet modal-sheet">
+      <div class="sheet-header">
+        <h2 id="modalTitle">Form</h2>
+      </div>
+      <div class="sheet-body" id="modalContent"></div>
+    </div>
+  </div>
 
-        <div class="backup-info-row">
-          <div class="backup-info-left">💾 <span>Used Storage</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbStorage">-</div>
-        </div>
-
-        <div class="backup-info-row">
-          <div class="backup-info-left">🟢 <span>Active</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbActive">-</div>
-        </div>
-
-        <div class="backup-info-row">
-          <div class="backup-info-left">📦 <span>Archive</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbArchive">-</div>
-        </div>
-
-        <div class="backup-info-row">
-          <div class="backup-info-left">🕒 <span>Last Backup</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbLastBackup">-</div>
-        </div>
-
-        <div class="backup-info-row">
-          <div class="backup-info-left">📁 <span>Backups</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbCount">-</div>
-        </div>
-
-        <div class="backup-info-row">
-          <div class="backup-info-left">🛡️ <span>Status</span></div>
-          <div class="backup-info-fill"></div>
-          <div class="backup-info-right" id="dbStatus">-</div>
-        </div>
-
+  <!-- =========================
+       Confirm Modal
+  ========================= -->
+  <div class="overlay" id="confirmOverlay">
+    <div class="sheet confirm-sheet">
+      <div class="sheet-header">
+        <h2>Confirm</h2>
+      </div>
+      <div class="sheet-body">
+        <p class="confirm-text" id="confirmText">Are you sure?</p>
+      </div>
+      <div class="sheet-footer confirm-actions">
+        <button class="secondary-btn" id="confirmCancel">Cancel</button>
+        <button class="danger-btn" id="confirmOk">Delete</button>
       </div>
     </div>
+  </div>
 
-    <!-- 🟩 Actions -->
-    <div class="card backup-actions-card" style="margin-top:12px; padding:14px;">
-      <div class="backup-actions-grid">
-        <button id="createBackupBtn" class="btn primary" type="button">💾 Backup</button>
-        <button id="restoreBackupBtn" class="btn" type="button">♻️ Restore</button>
+  <!-- =========================
+       Install Prompt
+  ========================= -->
+  <div class="overlay app-prompt-overlay" id="installPromptOverlay" aria-hidden="true">
+    <div class="sheet app-prompt-sheet app-prompt-sheet-install">
+      <div class="app-prompt-badge">Install App</div>
+      <h2 class="app-prompt-title">Install ACC on your phone</h2>
+      <p class="app-prompt-text">
+        Open it like a real app from your home screen, without browser tabs and address bar.
+      </p>
+      <div class="app-prompt-actions app-prompt-actions-2">
+        <button type="button" class="secondary-btn" id="installPromptLaterBtn">Later</button>
+        <button type="button" class="primary-btn" id="installPromptInstallBtn">Install</button>
       </div>
     </div>
-
-    <div class="modal-actions">
-      <button id="dataBackupClose" class="btn">Close</button>
-    </div>
-
   </div>
-</div>
-      
- <!-- Confirm Modal -->
-<div id="confirmModal" class="modal-backdrop" style="display:none;">
-  <div class="modal">
-    <div class="modal-title" id="confirmTitle">Confirm</div>
-    <div class="modal-text" id="confirmText">Are you sure?</div>
-    <div class="modal-actions">
-      <button id="confirmNo" class="btn">No</button>
-      <button id="confirmYes" class="btn danger">Yes</button>
-    </div>
-  </div>
-</div>
-
-<!-- Status List Modal -->
-<div id="statusListModal" class="modal-backdrop" style="display:none;">
-  <div class="modal">
-    <div class="modal-title" id="statusListTitle">Clients</div>
-    <div id="statusListBody" class="status-list-body"></div>
-    <div class="modal-actions">
-      <button id="statusListClose" class="btn">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Group Picker Modal -->
-<div id="groupPickerModal" class="modal-backdrop" style="display:none;">
-  <div class="modal group-picker-modal">
-    <div class="modal-title">Select Group</div>
-    <div id="groupPickerList" class="group-picker-list"></div>
-    <div class="modal-actions">
-      <button id="groupPickerClose" class="btn">Close</button>
-    </div>
-  </div>
-</div>
-
-   <!-- Text Prompt Modal -->
-<div id="textPromptModal" class="modal-backdrop" style="display:none;">
-  <div class="modal">
-    <div id="textPromptTitle" class="modal-title">Enter text</div>
-    <div id="textPromptText" class="modal-text">Type a value below.</div>
-
-    <div style="margin-top:12px;">
-      <input
-  id="textPromptInput"
-  type="text"
-  class="review-search-input"
-  style="width:100%;"
-  placeholder="Type here"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="words"
-  spellcheck="false"
-/>
-    </div>
-
-    <div class="modal-actions">
-      <button id="textPromptCancel" class="btn">Cancel</button>
-      <button id="textPromptOk" class="btn primary">Save</button>
-    </div>
-  </div>
-</div>
-
-  <!-- scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   
-   <!-- Install App Bar -->
-<div id="installBar" style="display:none;">
-  <div class="install-copy">
-    <div class="install-title">Install</div>
-    <div class="install-text">Add this app to your home screen for faster access.</div>
+  <!-- =========================
+       iPhone Prompt
+   ======================== -->
+   <div class="overlay app-prompt-overlay" id="iosInstallPromptOverlay" aria-hidden="true">
+    <div class="sheet app-prompt-sheet app-prompt-sheet-install">
+      <div class="app-prompt-badge">Install on iPhone</div>
+      <h2 class="app-prompt-title">Add ACC to your Home Screen</h2>
+      <p class="app-prompt-text">
+        Tap the Share button in Safari, then choose <strong>Add to Home Screen</strong>.
+      </p>
+      <div class="app-prompt-actions app-prompt-actions-2">
+        <button type="button" class="secondary-btn" id="iosInstallPromptCloseBtn">Close</button>
+      </div>
+    </div>
   </div>
 
-  <div class="install-actions">
-    <button id="installCloseBtn" class="btn small" type="button">Close</button>
-    <button id="installBtn" class="btn small primary" type="button">Install</button>
+  <!-- =========================
+       Update Prompt
+  ========================= -->
+  <div class="overlay app-prompt-overlay" id="updatePromptOverlay" aria-hidden="true">
+  <div class="sheet app-prompt-sheet app-prompt-sheet-update">
+    <div class="app-prompt-badge">New Version Available</div>
+    <h2 class="app-prompt-title">Update is ready</h2>
+
+    <p class="app-prompt-text">
+      Before updating, export your data for safety.
+    </p>
+
+    <button
+      type="button"
+      class="primary-btn app-prompt-export-btn"
+      id="updateExportBtn"
+    >
+      ⬆️ Export data
+    </button>
+
+    <div class="app-prompt-actions app-prompt-actions-2 compact">
+      <button type="button" class="secondary-btn" id="updateCancelBtn">Cancel</button>
+      <button type="button" class="primary-btn" id="updateApplyBtn">Update</button>
+    </div>
   </div>
 </div>
 
-  <!-- Update Available Bar -->
-<div id="updateBar" class="update-bar" style="display:none;">
-  <div class="update-copy">
-    <div class="update-title">New version available</div>
-    <div class="update-text">Back up your data before updating.</div>
-  </div>
-
-  <div class="update-actions">
-    <button id="updateExportBtn" class="btn small">Export All</button>
-    <button id="updateBtn" class="btn small primary">Update</button>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<script src="js/01-config.js"></script>
-<script src="js/02-dom.js"></script>
-<script src="js/03-state.js"></script>
-<script src="js/04-storage.js"></script>
-<script src="js/05-utils-core.js"></script>
-
-<script src="js/10-calc-dates.js"></script>
-<script src="js/11-calc-status.js"></script>
-<script src="js/12-calc-totals.js"></script>
-<script src="js/13-calc-monthly.js"></script>
-
-<script src="js/20-actions-groups.js"></script>
-<script src="js/21-actions-periods.js"></script>
-<script src="js/22-actions-rows.js"></script>
-<script src="js/23-actions-status.js"></script>
-
-<script src="js/07-modals.js"></script>
-<script src="js/14-search.js"></script>           <!-- გადარქმეული -->
-<script src="js/16-import-export.js"></script>    <!-- გადარქმეული -->
-
-<script src="js/30-render-overview.js"></script>
-<script src="js/31-render-periods.js"></script>
-<script src="js/32-render-review.js"></script>
-<script src="js/33-render-monthly.js"></script>
-<script src="js/34-render-shared.js"></script>
-<script src="js/35-ui-sync.js"></script>
-
-<script src="js/15-theme.js"></script>
-
-<script src="js/40-update-flow.js"></script>
-<script src="js/50-bind-events.js"></script>
-<script src="js/60-app-init.js"></script>
-<script src="js/99-debug.js"></script>
-      
-</body>
+  <!-- =========================
+       Scripts
+  ========================= -->
+  <script src="js/01-config.js"></script>
+  <script src="js/02-storage.js"></script>
+  <script src="js/03-utils.js"></script>
+  <script src="js/04-render.js"></script>
+  <script src="js/05-forms.js"></script>
+  <script src="js/06-actions.js"></script>
+  <script src="js/08-modals.js"></script>
+  <script src="js/09-export.js"></script>
+  <script src="js/07-events.js"></script>
+  <script src="js/10-init.js"></script>
+ </body>
 </html>
