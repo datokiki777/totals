@@ -14,11 +14,13 @@
 <link rel="stylesheet" href="css/08-theme.css" />
 <link rel="stylesheet" href="css/09-effects.css" />
 <link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png" />
+<link rel="icon" href="./icons/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
 <link rel="apple-touch-icon" sizes="167x167" href="./icons/icon-167.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
-<link rel="icon" href="./icons/favicon.ico" />
+
+<meta name="description" content="Client Totals - period, group and client tracking app" />
+<meta name="color-scheme" content="dark light" />
 
 <meta name="theme-color" content="#071633" id="themeColorMeta" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -43,16 +45,95 @@
   })();
 </script>
 
+<style>
+  html,
+  body {
+    background: #071633;
+  }
+
+  #startupSplash {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 50% 32%, rgba(255, 196, 64, 0.16), transparent 26%),
+      radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.08), transparent 18%),
+      linear-gradient(180deg, #0b1d3f 0%, #071633 55%, #050f24 100%);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+
+  #startupSplash.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .startup-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+
+  .startup-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.35));
+    border-radius: 28px;
+  }
+
+  .startup-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+  }
+
+  .startup-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.72);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .startup-glow {
+    width: 84px;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.15),
+      rgba(255,205,84,0.95),
+      rgba(255,255,255,0.15)
+    );
+    box-shadow: 0 0 20px rgba(255, 196, 64, 0.35);
+  }
+</style>
+
 </head>
 
 <body class="booting">
 
-     <div id="splash">
-          <div class="loader-ring"></div>
-           <div class="loader-bar">
-           <div class="loader-bar-fill"></div>
-         </div>
-       </div>
+     <div id="startupSplash" aria-hidden="true">
+      <div class="startup-box">
+      <img
+      class="startup-logo"
+      src="./icons/icon-512.png"
+      alt="Client Totals"
+       />
+     <p class="startup-subtitle">Groups • Periods •    Review</p>
+    <h1 class="startup-title">Client Totals</h1>
+    <div class="startup-glow"></div>
+  </div>
+</div>
        
        <header class="topbar">
        <div class="workspace-bar">
@@ -630,6 +711,21 @@
 <script src="js/50-bind-events.js"></script>
 <script src="js/60-app-init.js"></script>
 <script src="js/99-debug.js"></script>
+
+<script>
+  window.addEventListener("load", () => {
+    const splash = document.getElementById("startupSplash");
+    if (!splash) return;
+
+    requestAnimationFrame(() => {
+      splash.classList.add("is-hidden");
+    });
+
+    setTimeout(() => {
+      splash.remove();
+    }, 500);
+  });
+</script>
       
 </body>
 </html>
