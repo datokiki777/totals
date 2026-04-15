@@ -717,13 +717,13 @@
     const splash = document.getElementById("startupSplash");
     if (!splash) return;
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       splash.classList.add("is-hidden");
-    });
+    }, 850);
 
     setTimeout(() => {
       splash.remove();
-    }, 500);
+    }, 1250);
   });
 </script>
       
