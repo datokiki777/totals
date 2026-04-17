@@ -567,17 +567,31 @@
           <div class="backup-info-fill"></div>
           <div class="backup-info-right" id="dbStatus">-</div>
         </div>
+        
+        <div class="backup-info-row">
+  <div class="backup-info-left">
+    <span>☁️ Cloud Sync</span>
+  </div>
+  <div class="backup-info-fill"></div>
+  <div id="dbCloudSyncStatus" class="backup-info-right backup-status-none">—</div>
+</div>
 
       </div>
     </div>
 
     <!-- 🟩 Actions -->
-    <div class="card backup-actions-card" style="margin-top:12px; padding:14px;">
-      <div class="backup-actions-grid">
-        <button id="createBackupBtn" class="btn primary" type="button">💾 Backup</button>
-        <button id="restoreBackupBtn" class="btn" type="button">♻️ Restore</button>
-      </div>
-    </div>
+<div class="card backup-actions-card" style="margin-top:12px; padding:14px;">
+  <div class="backup-actions-grid">
+  <button id="createBackupBtn" class="btn primary backup-action-btn" type="button">💾 Backup</button>
+  <button id="restoreBackupBtn" class="btn backup-action-btn" type="button">♻️ Restore</button>
+  <button id="cloudSaveBtn" class="btn primary backup-action-btn cloud-action-btn" type="button">⛅ Save Cloud</button>
+<button id="cloudLoadBtn" class="btn backup-action-btn cloud-action-btn" type="button">⛅ Load Cloud</button>
+</div>
+
+  <div class="backup-cloud-note">
+    Cloud sync is active for the latest version.
+  </div>
+</div>
 
     <div class="modal-actions">
       <button id="dataBackupClose" class="btn">Close</button>
@@ -695,8 +709,30 @@
 <script src="js/23-actions-status.js"></script>
 
 <script src="js/07-modals.js"></script>
-<script src="js/14-search.js"></script>           <!-- გადარქმეული -->
-<script src="js/16-import-export.js"></script>    <!-- გადარქმეული -->
+<script src="js/14-search.js"></script>
+<script src="js/16-import-export.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQ184qyPArf__1LRKOfyFkwfWB0io2ipM",
+    authDomain: "client-totals-sync.firebaseapp.com",
+    projectId: "client-totals-sync",
+    storageBucket: "client-totals-sync.firebasestorage.app",
+    messagingSenderId: "69584526058",
+    appId: "1:69584526058:web:9a06b863e83663476f5593"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // global access
+  window.__db = db;
+</script>
+
+<script src="js/17-cloud-sync.js"></script>
 
 <script src="js/30-render-overview.js"></script>
 <script src="js/31-render-periods.js"></script>

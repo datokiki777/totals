@@ -65,6 +65,9 @@
 - data-backup-menu-btn
 - data-backup-menu-icon
 - data-backup-menu-title
+- Cloud Sync status row styles
+- .backup-status-pending
+- .backup-cloud-note
 3
 
 ---
@@ -115,6 +118,7 @@
 - controlsToggle (light)
 - Light theme overrides for Data & Backup modal
 - Light theme overrides for data-backup-menu-btn
+- Light theme support for .backup-status-pending
 7
 
 ---

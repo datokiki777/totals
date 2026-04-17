@@ -6,7 +6,7 @@
 ═══════════════════════════════════════
 - IndexedDB config: DB_NAME, DB_VERSION, DB_STORE_MAIN
 - Legacy localStorage keys (for migration only)
-- New IndexedDB KV keys: 
+- New IndexedDB KV keys:
   - DB_KEY_APP_STATE, DB_KEY_THEME, DB_KEY_CONTROLS_COLLAPSED
   - DB_KEY_SUMMARY_COLLAPSED, DB_KEY_MONTH_CURSOR, DB_KEY_COLLAPSED_PERIODS
   - DB_KEY_BACKUP_REMINDER_DIRTY, DB_KEY_BACKUP_REMINDER_LAST_CHANGE
@@ -16,7 +16,7 @@
 ═══════════════════════════════════════
 02-dom.js
 ═══════════════════════════════════════
-- DOM element references (unchanged)
+- DOM element references
 - rootEl, modeEditBtn, modeReviewBtn
 - workspaceActiveBtn, workspaceArchiveBtn
 - editView, reviewView, elPeriods
@@ -41,10 +41,12 @@
 - pinLockModal, pinLockInput, pinUnlockBtn, pinLockError
 - bodyOverflowBeforePinLock
 - Data & Backup DOM refs:
-- dataBackupBtn, dataBackupModal, dataBackupClose
-- dbStorageEl, dbActiveEl, dbArchiveEl
-- dbLastBackupEl, dbCountEl, dbStatusEl
-- createBackupBtn, restoreBackupBtn
+  - dataBackupBtn, dataBackupModal, dataBackupClose
+  - dbStorageEl, dbActiveEl, dbArchiveEl
+  - dbLastBackupEl, dbCountEl, dbStatusEl
+  - dbCloudSyncStatusEl
+  - createBackupBtn, restoreBackupBtn
+  - cloudSaveBtn, cloudLoadBtn
 
 ═══════════════════════════════════════
 03-state.js
@@ -75,12 +77,18 @@
 - isPeriodCollapsed(), setPeriodCollapsed()
 - isDeviceVerified(), setDeviceVerified()
 - getCurrentMonthKey()
-- Backup reminder: markBackupReminderDirty()
-- shouldShowBackupReminder(), getWeekKeyForReminder()
-- isBackupReminderWindow()
+- Backup reminder:
+  - markBackupReminderDirty()
+  - shouldShowBackupReminder()
+  - getWeekKeyForReminder()
+  - isBackupReminderWindow()
 - Data & Backup meta:
-- BACKUP_META_KEY
-- getBackupMeta(), setBackupMeta()
+  - BACKUP_META_KEY
+  - getBackupMeta(), setBackupMeta()
+- saveState(options)
+  → local save unchanged
+  → can skip backup reminder dirty flag
+  → now also schedules cloud autosync unless skipped
 
 ═══════════════════════════════════════
 05-utils-core.js
@@ -124,6 +132,110 @@
 - calcMonthlyTotals() - proportional by day overlap
 
 ═══════════════════════════════════════
+14-search.js (renamed from 10-search.js)
+═══════════════════════════════════════
+- buildReviewSearchIndex(), refreshSearchIndex()
+- goToClientFromSearch() - structural navigation (uses render)
+- initReviewSearch(), renderSearchResults()
+- bindSearchResultClicks(), highlightMatch()
+- clearSearch()
+
+═══════════════════════════════════════
+15-theme.js
+═══════════════════════════════════════
+THEME:
+- initThemeAsync(), setTheme(), toggleTheme()
+
+COLLAPSE:
+- initControlsToggleAsync(), setControlsCollapsed()
+- initSummaryPanel(), setSummaryCollapsed()
+
+WORKSPACE & MODE:
+- setWorkspaceMode(), updateWorkspaceSwitchUI()
+- setMode() - async
+  → mode switch uses refreshFullUiState()
+  → forces render() in Edit mode
+  → forces renderReview() in Review mode
+- shiftMonthCursor() - async, uses renderMonthlySection()
+- updateGrandToggleUI(), setControlsForMode()
+- initWorkspaceSwitch()
+
+═══════════════════════════════════════
+16-import-export.js (renamed from 11-import-export.js)
+═══════════════════════════════════════
+- handleExportJson(), handleImportJsonChange()
+- JSON replace imports call cleanupDefaultGroup()
+- JSON export updates backup meta (lastBackupAt, count)
+- handleExportExcel(), handleImportExcelChange()
+- Excel replace imports call cleanupDefaultGroup()
+- handleExportPdf(), exportPdfAllGroups()
+- downloadJson(), nowStamp()
+- JSON menu buttons hidden from top menu UI
+- JSON backup/restore now opened via Data & Backup modal
+- JSON import normalizes gross/net to whole euros
+- Excel import normalizes gross/net to whole euros
+- decimal money values rounded automatically on import
+- JSON merge / replace trigger immediate cloud sync
+- Excel replace trigger immediate cloud sync
+
+═══════════════════════════════════════
+17-cloud-sync.js
+═══════════════════════════════════════
+- Firestore cloud sync layer (local-first app)
+- Main latest snapshot path:
+  → backups / main
+- Daily history snapshot path:
+  → backups_history / YYYY-MM-DD
+- handleCloudSave(), handleCloudLoad()
+- writeCloudMainSnapshot()
+- scheduleCloudAutoSync()
+  → 8s debounce for ordinary edits
+- triggerImmediateCloudSync()
+  → immediate sync for big actions
+- force sync
+  → 30s while editing continues
+- refreshCloudSyncStatusFromServer()
+- Cloud sync states:
+  → Synced
+  → Syncing...
+  → Saved locally
+  → Cloud error
+- Online/offline listeners:
+  → offline keeps local data safe
+  → online retries pending cloud sync
+- Daily history helpers:
+  - toDayKey()
+  - toDisplayDay()
+  - getYesterdayKey()
+  - markPendingHistoryDay()
+  - getPendingHistoryDay()
+  - setLastHistorySavedDay()
+  - getLastHistorySavedDay()
+- finalizePendingHistoryDayIfNeeded()
+  → creates previous-day daily snapshot on next app launch
+  → only if there were changes
+  → only if that day was not already finalized
+- Daily history document fields:
+  - type
+  - historyDay
+  - historyDayDisplay
+  - sourceUpdatedAt
+  - savedAt
+  - expireAt
+  - data
+- getCloudHistorySnapshots()
+  → reads daily history restore points
+- chooseCloudRestoreSource()
+  → Cloud Load can restore:
+    - Latest Cloud
+    - Daily History snapshot(s)
+- Restore display format:
+  → DD-MM-YYYY shown to user
+  → YYYY-MM-DD used internally / as doc id
+- TTL-ready history:
+  → expireAt stored in daily history docs for automatic cleanup later
+
+═══════════════════════════════════════
 20-actions-groups.js
 ═══════════════════════════════════════
 - addGroup(), renameGroup(), deleteGroup()
@@ -165,51 +277,6 @@
 - initStatusBadgeActions()
 
 ═══════════════════════════════════════
-14-search.js (renamed from 10-search.js)
-═══════════════════════════════════════
-- buildReviewSearchIndex(), refreshSearchIndex()
-- goToClientFromSearch() - structural navigation (uses render)
-- initReviewSearch(), renderSearchResults()
-- bindSearchResultClicks(), highlightMatch()
-- clearSearch()
-
-═══════════════════════════════════════
-16-import-export.js (renamed from 11-import-export.js)
-═══════════════════════════════════════
-- handleExportJson(), handleImportJsonChange()
-- JSON replace imports call cleanupDefaultGroup()
-- JSON export updates backup meta (lastBackupAt, count)
-- handleExportExcel(), handleImportExcelChange()
-- Excel replace imports call cleanupDefaultGroup()
-- handleExportPdf(), exportPdfAllGroups()
-- downloadJson(), nowStamp()
-- JSON menu buttons hidden from top menu UI
-- JSON backup/restore now opened via Data & Backup modal
-- JSON import normalizes gross/net to whole euros
-- Excel import normalizes gross/net to whole euros
-- decimal money values rounded automatically on import
-
-═══════════════════════════════════════
-15-theme.js
-═══════════════════════════════════════
-THEME:
-- initThemeAsync(), setTheme(), toggleTheme()
-
-COLLAPSE:
-- initControlsToggleAsync(), setControlsCollapsed()
-- initSummaryPanel(), setSummaryCollapsed()
-
-WORKSPACE & MODE:
-- setWorkspaceMode(), updateWorkspaceSwitchUI()
-- setMode() - async
-  → mode switch uses refreshFullUiState()
-  → forces render() in Edit mode
-  → forces renderReview() in Review mode
-- shiftMonthCursor() - async, uses renderMonthlySection()
-- updateGrandToggleUI(), setControlsForMode()
-- initWorkspaceSwitch()
-
-═══════════════════════════════════════
 30-render-overview.js
 ═══════════════════════════════════════
 - renderOverviewDateRange(), renderOverviewSection()
@@ -226,7 +293,6 @@ WORKSPACE & MODE:
 ═══════════════════════════════════════
 32-render-review.js
 ═══════════════════════════════════════
-- renderReview() - FULL REVIEW VIEW RENDER
 - renderReview() - FULL REVIEW VIEW RENDER
   → Review group cards are collapsible
   → Default state = collapsed
@@ -268,11 +334,13 @@ CENTRAL UI SYNC:
   - refreshUiChrome()
   - updateAfterGlobalChange()
   - updateDataBackupInfo()
+- updateDataBackupInfo()
   - Used Storage via navigator.storage.estimate() fallback
   - Active counts: groups / periods / rows
   - Archive counts: groups / periods / rows
   - Last backup / backup count
   - Backup status color sync
+  - also refreshes Cloud Sync status in Data & Backup modal
 
 ═══════════════════════════════════════
 40-update-flow.js
@@ -300,11 +368,18 @@ GLOBAL EVENT LISTENERS:
 - Status list modal close
 - Keyboard detection, back button (popstate)
 - Data & Backup modal:
-- open / close handlers
-- closes top menu before opening
-- Backup button → handleExportJson()
-- Restore button → menuImportJsonInput.click()
-- popstate close support
+  - open / close handlers
+  - closes top menu before opening
+  - Backup button → handleExportJson()
+  - Restore button → menuImportJsonInput.click()
+  - Cloud Save button → handleCloudSave()
+  - Cloud Load button → handleCloudLoad()
+  - popstate close support
+- Cloud sync hooks:
+  → default rate input = autosync
+  → add period = immediate sync
+  → reset group = immediate sync
+  → archive/unarchive = immediate sync
 
 ═══════════════════════════════════════
 60-app-init.js
@@ -312,16 +387,17 @@ GLOBAL EVENT LISTENERS:
 APP INITIALIZATION:
 - initApp() - async startup sequence:
   1. openDb()
-  2. migrateFromLocalStorage()
-  3. loadState()
-  4. initThemeAsync()
-  5. initControlsToggleAsync()
-  6. initWorkspaceSwitch()
-  7. initSummaryPanel()
-  8. initTopMenu()
-  9. initPinLockAsync()
-  10. initStatusBadgeActions()
-  11. setMode()
+  2. loadState()
+  3. initThemeAsync()
+  4. initControlsToggleAsync()
+  5. initWorkspaceSwitch()
+  6. initSummaryPanel()
+  7. initTopMenu()
+  8. initPinLockAsync()
+  9. initStatusBadgeActions()
+  10. setMode()
+  10.5 finalizePendingHistoryDayIfNeeded()
+  11. show backup reminder if needed
 - Splash screen removal
 - Service Worker (PWA)
   → manual update flow
@@ -369,9 +445,33 @@ UI CHROME SYNC → refreshUiChrome() / refreshFullUiState() (35-ui-sync.js):
 - html.is-edit class
 
 STORAGE:
-- All data stored in IndexedDB (client_totals_db)
-- localStorage used ONLY for one-time migration
+- All main app data stored in IndexedDB (client_totals_db)
+- localStorage used ONLY for one-time migration / legacy cleanup
 - After migration, localStorage is cleared automatically
+
+CLOUD SYNC:
+- IndexedDB remains the primary storage
+- Firestore is a background sync layer only
+- Latest snapshot:
+  → backups/main
+- Daily history:
+  → backups_history/YYYY-MM-DD
+- Ordinary edits:
+  → save locally first
+  → cloud autosync after 8s inactivity
+- Long continuous editing:
+  → force cloud sync every 30s
+- Big actions:
+  → trigger immediate cloud sync
+- Daily history finalize:
+  → previous day snapshot is created on next app launch
+  → only if previous day had changes
+  → only once per day
+- Cloud Load supports:
+  → latest snapshot restore
+  → daily history restore
+- History docs are TTL-ready via expireAt
+- Manual JSON backup/restore remains unchanged
 
 ═══════════════════════════════════════
 STATUS: ✅ PRODUCTION READY (REFACTORED)
