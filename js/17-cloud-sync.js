@@ -329,29 +329,11 @@ async function chooseCloudRestoreSource() {
     return options[0];
   }
 
-  const text = options
-    .map((opt, index) => `${index + 1}. ${opt.label}`)
-    .join("\n");
+  const picked = await askRestoreSource(options);
 
-  const picked = await askText(
-    "Choose restore source:\n\n" + text + "\n\nEnter number:",
-    "Cloud Restore",
-    { placeholder: "1" }
-  );
+if (!picked) return null;
 
-  if (!picked) return null;
-
-  const index = Number(String(picked).trim()) - 1;
-  if (!Number.isInteger(index) || index < 0 || index >= options.length) {
-    await askConfirm(
-      "Invalid selection.",
-      "Cloud Restore",
-      { singleButton: true, okText: "OK" }
-    );
-    return null;
-  }
-
-  return options[index];
+return picked;
 }
 
 async function refreshCloudSyncStatusFromServer() {

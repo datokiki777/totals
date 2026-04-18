@@ -594,3 +594,73 @@ function initStatusBadgeActions() {
     };
   });
 }
+
+// =========================
+// Restore Source Picker (Cards)
+// =========================
+
+function askRestoreSource(options) {
+  return new Promise((resolve) => {
+    let selectedIndex = -1;
+
+    const listHtml = options.map((opt, i) => `
+      <div class="restore-item" data-index="${i}">
+        ${i + 1}. ${opt.label}
+      </div>
+    `).join("");
+
+    const html = `
+      <div class="restore-list">
+        ${listHtml}
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="restoreCancelBtn">Cancel</button>
+        <button class="btn primary" id="restoreOkBtn" disabled>Restore</button>
+      </div>
+    `;
+
+    // reuse confirm modal container
+    confirmTitleEl.textContent = "Restore source";
+    confirmTextEl.innerHTML = html;
+
+    confirmNoBtn.style.display = "none";
+    confirmYesBtn.style.display = "none";
+    confirmBackdrop.style.display = "flex";
+    history.pushState({ modal: "restoreSource" }, "");
+
+    const items = confirmTextEl.querySelectorAll(".restore-item");
+    const okBtn = document.getElementById("restoreOkBtn");
+    const cancelBtn = document.getElementById("restoreCancelBtn");
+
+    const cleanup = () => {
+      confirmBackdrop.style.display = "none";
+      confirmTextEl.innerHTML = "";
+      confirmNoBtn.style.display = "";
+      confirmYesBtn.style.display = "";
+      confirmNoBtn.onclick = null;
+      confirmYesBtn.onclick = null;
+    };
+
+    items.forEach(el => {
+      el.onclick = () => {
+        items.forEach(i => i.classList.remove("active"));
+        el.classList.add("active");
+        selectedIndex = Number(el.dataset.index);
+        okBtn.disabled = false;
+      };
+    });
+
+    cancelBtn.onclick = () => {
+      cleanup();
+      resolve(null);
+    };
+
+    okBtn.onclick = () => {
+      if (selectedIndex < 0) return;
+      const picked = options[selectedIndex];
+      cleanup();
+      resolve(picked);
+    };
+  });
+}
