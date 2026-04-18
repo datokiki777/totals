@@ -186,7 +186,9 @@ WORKSPACE & MODE:
   → backups / main
 - Daily history snapshot path:
   → backups_history / YYYY-MM-DD
-- handleCloudSave(), handleCloudLoad()
+- handleCloudSave()
+- handleCloudLoad()
+  → restore source picker + cleaned restore flow
 - writeCloudMainSnapshot()
 - scheduleCloudAutoSync()
   → 8s debounce for ordinary edits
@@ -229,6 +231,7 @@ WORKSPACE & MODE:
   → Cloud Load can restore:
     - Latest Cloud
     - Daily History snapshot(s)
+→ card-style restore source modal (no text prompt / no number input)
 - Restore display format:
   → DD-MM-YYYY shown to user
   → YYYY-MM-DD used internally / as doc id
@@ -275,6 +278,7 @@ WORKSPACE & MODE:
 - getClientsByStatus(), goToClientFromStatusList()
 - Backup reminder: showBackupReminderPopup()
 - initStatusBadgeActions()
+- askRestoreSource() - card-style cloud restore source picker
 
 ═══════════════════════════════════════
 30-render-overview.js
