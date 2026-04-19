@@ -15,5 +15,6 @@ const DB_KEY_BACKUP_REMINDER_DIRTY = "backupReminderDirty";
 const DB_KEY_BACKUP_REMINDER_LAST_CHANGE = "backupReminderLastChange";
 const DB_KEY_BACKUP_REMINDER_LAST_SHOWN = "backupReminderLastShownWeek";
 const DB_KEY_PIN_VERIFIED = "pinVerified";
+const DB_KEY_CLOUD_NAMESPACE = "cloudNamespace";
 
 const APP_PIN = "369700";

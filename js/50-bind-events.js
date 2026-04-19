@@ -98,9 +98,6 @@ archiveGroupBtn?.addEventListener("click", async () => {
     if (typeof triggerImmediateCloudSync === "function") {
       triggerImmediateCloudSync("archive-toggle");
     }
-    if (typeof triggerImmediateCloudSync === "function") {
-      triggerImmediateCloudSync("archive-toggle");
-    }
     render();
     if (appState.uiMode === "review") renderReview();
   });
@@ -114,12 +111,6 @@ defaultRateInput?.addEventListener("input", async () => {
   const g = activeGroup();
   g.data.defaultRatePercent = clampRate(defaultRateInput.value);
   await saveState();
-  if (typeof scheduleCloudAutoSync === "function") {
-    scheduleCloudAutoSync("default-rate");
-  }
-  if (typeof scheduleCloudAutoSync === "function") {
-    scheduleCloudAutoSync("default-rate");
-  }
   await updateAfterGlobalChange();
   if (appState.uiMode === "review") renderReview();
 });
@@ -151,9 +142,6 @@ addPeriodBtn?.addEventListener("click", async () => {
     triggerImmediateCloudSync("add-period");
   }
   render();
-  if (typeof triggerImmediateCloudSync === "function") {
-    triggerImmediateCloudSync("add-period");
-  }
   if (appState.uiMode === "review") renderReview();
 
   setTimeout(() => {
@@ -195,9 +183,6 @@ resetBtn?.addEventListener("click", async () => {
     triggerImmediateCloudSync("reset-group");
   }
   render();
-  if (typeof triggerImmediateCloudSync === "function") {
-    triggerImmediateCloudSync("reset-group");
-  }
   if (appState.uiMode === "review") renderReview();
 });
 

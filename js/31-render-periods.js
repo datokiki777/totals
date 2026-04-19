@@ -1,6 +1,36 @@
 // 31-render-periods.js
 // Full render of edit view (periods, rows, totals)
 
+const textFieldSaveTimers = new Map();
+const totalsFieldSaveTimers = new Map();
+
+function queueDeferredSave(map, key, delayMs, task) {
+  const existing = map.get(key);
+  if (existing) clearTimeout(existing);
+
+  const timer = setTimeout(async () => {
+    map.delete(key);
+
+    try {
+      await task();
+    } catch (error) {
+      console.error("Deferred save failed:", error);
+    }
+  }, delayMs);
+
+  map.set(key, timer);
+}
+
+async function flushDeferredSave(map, key, task) {
+  const existing = map.get(key);
+  if (existing) {
+    clearTimeout(existing);
+    map.delete(key);
+  }
+
+  await task();
+}
+
 async function render() {
   renderGroupSelect();
   updateGrandToggleUI();
@@ -150,28 +180,34 @@ async function render() {
       }
 
       // Customer name change - only save, no render needed
-      custEl?.addEventListener("input", async () => {
+      custEl?.addEventListener("input", () => {
         r.customer = custEl.value;
-        await saveState();
+        queueDeferredSave(textFieldSaveTimers, r.id, 220, async () => {
+          await saveState();
+        });
       });
 
       // City change - only save, no render needed
-      cityEl?.addEventListener("input", async () => {
+      cityEl?.addEventListener("input", () => {
         r.city = cityEl.value;
-        await saveState();
+        queueDeferredSave(textFieldSaveTimers, r.id, 220, async () => {
+          await saveState();
+        });
       });
 
       // Gross change - affects totals
-      grossEl?.addEventListener("input", async () => {
-      const cleaned = sanitizeIntegerMoneyInput(grossEl.value);
-      if (grossEl.value !== cleaned) {
-      grossEl.value = cleaned;
-      }
+      grossEl?.addEventListener("input", () => {
+        const cleaned = sanitizeIntegerMoneyInput(grossEl.value);
+        if (grossEl.value !== cleaned) {
+          grossEl.value = cleaned;
+        }
 
-  r.gross = cleaned;
-  await saveState();
-  await updateAfterRowChange(p.id);
-});
+        r.gross = cleaned;
+        queueDeferredSave(totalsFieldSaveTimers, r.id, 120, async () => {
+          await saveState();
+          await updateAfterRowChange(p.id);
+        });
+      });
 
       let previousNetValue = r.net ?? "";
 
@@ -180,16 +216,37 @@ async function render() {
       });
 
       // Net change - affects totals
-      netEl?.addEventListener("input", async () => {
-      const cleaned = sanitizeIntegerMoneyInput(netEl.value);
-      if (netEl.value !== cleaned) {
-      netEl.value = cleaned;
-     }
+      netEl?.addEventListener("input", () => {
+        const cleaned = sanitizeIntegerMoneyInput(netEl.value);
+        if (netEl.value !== cleaned) {
+          netEl.value = cleaned;
+        }
 
-  r.net = cleaned;
-  await saveState();
-  await updateAfterRowChange(p.id);
-});
+        r.net = cleaned;
+        queueDeferredSave(totalsFieldSaveTimers, r.id, 120, async () => {
+          await saveState();
+          await updateAfterRowChange(p.id);
+        });
+      });
+
+      custEl?.addEventListener("change", async () => {
+        await flushDeferredSave(textFieldSaveTimers, r.id, async () => {
+          await saveState();
+        });
+      });
+
+      cityEl?.addEventListener("change", async () => {
+        await flushDeferredSave(textFieldSaveTimers, r.id, async () => {
+          await saveState();
+        });
+      });
+
+      grossEl?.addEventListener("change", async () => {
+        await flushDeferredSave(totalsFieldSaveTimers, r.id, async () => {
+          await saveState();
+          await updateAfterRowChange(p.id);
+        });
+      });
 
       // Net suspicious check
       netEl?.addEventListener("change", async () => {
@@ -214,6 +271,11 @@ async function render() {
 
         netEl.value = previousNetValue || "";
         r.net = netEl.value;
+        const pendingTotalsTimer = totalsFieldSaveTimers.get(r.id);
+        if (pendingTotalsTimer) {
+          clearTimeout(pendingTotalsTimer);
+          totalsFieldSaveTimers.delete(r.id);
+        }
         await saveState();
         await updateAfterRowChange(p.id);
 
@@ -247,6 +309,18 @@ async function render() {
           { type: "danger", okText: "Delete" }
         );
         if (!ok) return;
+
+        const pendingTextTimer = textFieldSaveTimers.get(r.id);
+        if (pendingTextTimer) {
+          clearTimeout(pendingTextTimer);
+          textFieldSaveTimers.delete(r.id);
+        }
+
+        const pendingTotalsTimer = totalsFieldSaveTimers.get(r.id);
+        if (pendingTotalsTimer) {
+          clearTimeout(pendingTotalsTimer);
+          totalsFieldSaveTimers.delete(r.id);
+        }
 
         p.rows = p.rows.filter((x) => x.id !== r.id);
         if (p.rows.length === 0) p.rows.push(emptyRow());
