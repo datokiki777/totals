@@ -1,13 +1,10 @@
 // 17-cloud-sync.js
-// Auto Cloud Sync (phase 2)
+// Auto Cloud Sync
 // Local-first app, Firestore as background sync layer
 
 const CLOUD_SYNC_DEBOUNCE_MS = 8000;
 const CLOUD_SYNC_FORCE_MS = 30000;
 const CLOUD_HISTORY_COLLECTION = "backups_history";
-const CLOUD_CLIENTS_COLLECTION = "clients";
-const CLOUD_BACKUPS_COLLECTION = "backups";
-const CLOUD_MAIN_DOC_ID = "main";
 const CLOUD_META_PENDING_HISTORY_DAY = "__cloud_pending_history_day";
 const CLOUD_META_LAST_HISTORY_SAVED_DAY = "__cloud_last_history_saved_day";
 
@@ -17,7 +14,6 @@ let cloudSyncInFlight = false;
 let cloudHasPendingChanges = false;
 let cloudLastSyncedAt = "";
 let cloudLastError = "";
-let cloudNamespacePromise = null;
 
 function toDayKey(date = new Date()) {
   const d = new Date(date);
@@ -33,44 +29,13 @@ function toDisplayDay(dayKey) {
   return `${d}-${m}-${y}`;
 }
 
-function createCloudNamespace() {
-  const randomPart =
-    crypto?.randomUUID?.() ??
-    `client-${Math.random().toString(16).slice(2)}-${Date.now()}`;
-
-  return String(randomPart).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
-}
-
-async function getCloudNamespace() {
-  if (!cloudNamespacePromise) {
-    cloudNamespacePromise = (async () => {
-      const saved = await dbGet(DB_KEY_CLOUD_NAMESPACE);
-      if (saved) return String(saved);
-
-      const created = createCloudNamespace();
-      await dbSet(DB_KEY_CLOUD_NAMESPACE, created);
-      return created;
-    })().catch((error) => {
-      cloudNamespacePromise = null;
-      throw error;
-    });
-  }
-
-  return await cloudNamespacePromise;
-}
-
 async function getCloudRefs() {
   const db = window.__db;
   if (!db) throw new Error("Firebase not initialized");
 
-  const namespace = await getCloudNamespace();
-  const clientRootRef = db.collection(CLOUD_CLIENTS_COLLECTION).doc(namespace);
-
   return {
-    namespace,
-    mainRef: clientRootRef.collection(CLOUD_BACKUPS_COLLECTION).doc(CLOUD_MAIN_DOC_ID),
-    historyCollection: clientRootRef.collection(CLOUD_HISTORY_COLLECTION),
-    legacyMainRef: db.collection(CLOUD_BACKUPS_COLLECTION).doc(CLOUD_MAIN_DOC_ID)
+    mainRef: db.collection("backups").doc("main"),
+    historyCollection: db.collection(CLOUD_HISTORY_COLLECTION)
   };
 }
 
@@ -155,9 +120,7 @@ async function writeCloudMainSnapshot() {
 
   const payload = {
     data: appState,
-    updatedAt: new Date().toISOString(),
-    clientId: refs.namespace,
-    schemaVersion: 2
+    updatedAt: new Date().toISOString()
   };
 
   await refs.mainRef.set(payload);
@@ -284,9 +247,7 @@ async function finalizePendingHistoryDayIfNeeded() {
       sourceUpdatedAt: mainPayload.updatedAt || "",
       savedAt: new Date().toISOString(),
       expireAt: firebase.firestore.Timestamp.fromDate(expireAt),
-      data: mainPayload.data,
-      clientId: refs.namespace,
-      schemaVersion: 2
+      data: mainPayload.data
     });
 
     await setLastHistorySavedDay(pendingDay);
@@ -328,7 +289,6 @@ async function getCloudHistorySnapshots() {
 async function chooseCloudRestoreSource() {
   const refs = await getCloudRefs();
   const mainDoc = await refs.mainRef.get();
-  const legacyMainDoc = await refs.legacyMainRef.get();
   const historyItems = await getCloudHistorySnapshots();
   const options = [];
 
@@ -338,15 +298,6 @@ async function chooseCloudRestoreSource() {
       id: "latest",
       label: `Latest Cloud${mainData.updatedAt ? " - " + new Date(mainData.updatedAt).toLocaleString() : ""}`,
       payload: mainData
-    });
-  }
-
-  if (legacyMainDoc.exists) {
-    const legacyData = legacyMainDoc.data() || {};
-    options.push({
-      id: "legacy-latest",
-      label: `Legacy Cloud${legacyData.updatedAt ? " - " + new Date(legacyData.updatedAt).toLocaleString() : ""}`,
-      payload: legacyData
     });
   }
 
