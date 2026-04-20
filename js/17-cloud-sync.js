@@ -2,7 +2,7 @@
 // Auto Cloud Sync
 // Local-first app, Firestore as background sync layer
 
-const CLOUD_SYNC_DEBOUNCE_MS = 8000;
+const CLOUD_SYNC_DEBOUNCE_MS = 5000;
 const CLOUD_SYNC_FORCE_MS = 30000;
 const CLOUD_HISTORY_COLLECTION = "backups_history";
 const CLOUD_META_PENDING_HISTORY_DAY = "__cloud_pending_history_day";
@@ -48,6 +48,12 @@ async function getCloudRefs() {
 
 async function markPendingHistoryDay(dayKey = toDayKey()) {
   try {
+    const existing = await dbGet(CLOUD_META_PENDING_HISTORY_DAY);
+
+    // თუ უკვე არსებობს pending დღე, არ გადავწეროთ
+    // ჯერ ის დღე უნდა დაფინალიზდეს შემდეგ გახსნაზე
+    if (existing) return;
+
     await dbSet(CLOUD_META_PENDING_HISTORY_DAY, dayKey);
   } catch (error) {
     console.error("Failed to mark pending history day:", error);
@@ -218,49 +224,59 @@ async function triggerImmediateCloudSync(reason = "big-action") {
 }
 
 async function finalizePendingHistoryDayIfNeeded() {
-	if (!window.__db) return false;
+  if (!window.__db) return false;
+
   try {
     const refs = await getCloudRefs();
     const todayKey = toDayKey();
     const pendingDay = await getPendingHistoryDay();
+
     if (!pendingDay) return false;
     if (pendingDay === todayKey) return false;
 
     const lastSavedDay = await getLastHistorySavedDay();
+    let finalized = false;
+
     if (lastSavedDay === pendingDay) {
-      await dbDelete(CLOUD_META_PENDING_HISTORY_DAY);
-      return false;
+      finalized = true;
+    } else {
+      const historyDoc = await refs.historyCollection.doc(pendingDay).get();
+
+      // თუ history უკვე არსებობს cloud-ში, აღარ ვქმნით თავიდან
+      if (historyDoc.exists) {
+        await setLastHistorySavedDay(pendingDay);
+        finalized = true;
+      } else {
+        const mainDoc = await refs.mainRef.get();
+        if (!mainDoc.exists) return false;
+
+        const mainPayload = mainDoc.data();
+        if (!mainPayload?.data) return false;
+
+        const expireAt = new Date();
+        expireAt.setDate(expireAt.getDate() + 30);
+
+        await refs.historyCollection.doc(pendingDay).set({
+          type: "daily-history",
+          historyDay: pendingDay,
+          historyDayDisplay: toDisplayDay(pendingDay),
+          sourceUpdatedAt: mainPayload.updatedAt || "",
+          savedAt: new Date().toISOString(),
+          expireAt: firebase.firestore.Timestamp.fromDate(expireAt),
+          data: mainPayload.data
+        });
+
+        await setLastHistorySavedDay(pendingDay);
+        finalized = true;
+      }
     }
 
-    const historyDoc = await refs.historyCollection.doc(pendingDay).get();
-    if (historyDoc.exists) {
-      await setLastHistorySavedDay(pendingDay);
+    if (finalized) {
       await dbDelete(CLOUD_META_PENDING_HISTORY_DAY);
-      return false;
+      return true;
     }
 
-    const mainDoc = await refs.mainRef.get();
-    if (!mainDoc.exists) return false;
-
-    const mainPayload = mainDoc.data();
-    if (!mainPayload?.data) return false;
-
-    const expireAt = new Date();
-    expireAt.setDate(expireAt.getDate() + 30);
-
-    await refs.historyCollection.doc(pendingDay).set({
-      type: "daily-history",
-      historyDay: pendingDay,
-      historyDayDisplay: toDisplayDay(pendingDay),
-      sourceUpdatedAt: mainPayload.updatedAt || "",
-      savedAt: new Date().toISOString(),
-      expireAt: firebase.firestore.Timestamp.fromDate(expireAt),
-      data: mainPayload.data
-    });
-
-    await setLastHistorySavedDay(pendingDay);
-    await dbDelete(CLOUD_META_PENDING_HISTORY_DAY);
-    return true;
+    return false;
   } catch (error) {
     console.error("Failed to finalize pending history day:", error);
     return false;
