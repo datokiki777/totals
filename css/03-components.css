@@ -746,7 +746,11 @@ html.controls-collapsed .control-deck{
 }
 
 .review-search-shell{
-  padding:20px;
+  padding:6px 8px;
+}
+
+.review-search{
+  padding:2px 4px;
 }
 
 .summary-collapse-icon{

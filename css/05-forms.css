@@ -105,18 +105,42 @@
 ========================================================= */
 
 .review-search-input{
-  height:46px;
-  padding:12px 14px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+  width:100%;
+  display:block;
+  height:32px;
+  padding:5px 12px 5px 42px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color:var(--text);
   outline:none;
-  font-size:14px;
+  font-size:12.5px;
 }
 
 .review-search-input:focus{
   border-color:rgba(93,212,255,.65);
+}
+
+.review-search{
+  position:relative;
+  padding:2px 6px;
+  display:flex;
+  align-items:center;
+}
+
+.review-search::before{
+  content:"🔍";
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:14px;
+  line-height:1;
+  opacity:0.78;
+  pointer-events:none;
+  z-index:2;
 }
 
 /* =========================================================

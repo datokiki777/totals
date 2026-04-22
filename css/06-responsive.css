@@ -161,6 +161,11 @@
   #archiveGroupBtn{
     min-width:52px;
   }
+  
+  .review-search-input{
+  height:30px;
+  font-size:12px;
+}
 }
 
 /* =========================================================
