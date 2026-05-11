@@ -354,3 +354,18 @@
   background: rgba(93,212,255,0.20);
   border: 1px solid rgba(93,212,255,0.45);
 }
+
+/* Make restore source list scrollable */
+.restore-list {
+    max-height: 55vh;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    padding-right: 4px;
+}
+
+/* Optional: better mobile touch */
+@media (max-width: 640px) {
+    .restore-list {
+        max-height: 45vh;
+    }
+}
