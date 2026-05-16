@@ -469,9 +469,11 @@ SALARY / INCOME LOGIC:
 - Gross period weeks:
   → periods with at least one valid Gross value
   → ranges are merged and rounded up by week
+  → week duration uses elapsed days (20→27 = 7 days = 1 week)
 - Paid period weeks:
   → periods with at least one valid Net value
   → ranges are merged and rounded up by week
+  → week duration uses elapsed days (not inclusive calendar-day count)
 - salaryAccrued = weekly salary * grossWeeks
 - salaryPaid = weekly salary * min(paidWeeks, grossWeeks)
 - salary remaining = max(0, salaryAccrued - salaryPaid)
