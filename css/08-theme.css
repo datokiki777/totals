@@ -336,6 +336,24 @@ html[data-theme="light"] .summary-status-strip > span{
   color:#334155;
 }
 
+html[data-theme="light"] .summary-income-strip{
+  background:rgba(255,255,255,.54);
+  border-color:rgba(148,163,184,.16);
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill{
+  background:rgba(248,250,252,.9);
+  border-color:rgba(148,163,184,.16);
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill > span{
+  color:#334155;
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill > b{
+  color:#0f172a;
+}
+
 html[data-theme="light"] .top-menu-btn span{
   background:#0f172a;
 }
@@ -505,6 +523,24 @@ html[data-theme="light"] .summary-status-strip > span{
   background:rgba(248,250,252,.92);
   border-color:rgba(148,163,184,.18);
   color:#64748b;
+}
+
+html[data-theme="light"] .summary-income-strip{
+  background:rgba(255,255,255,.58);
+  border-color:rgba(148,163,184,.18);
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill{
+  background:rgba(248,250,252,.92);
+  border-color:rgba(148,163,184,.18);
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill > span{
+  color:#64748b;
+}
+
+html[data-theme="light"] .summary-income-strip .finance-pill > b{
+  color:#0f172a;
 }
 
 html[data-theme="light"] .review-group-card::before{

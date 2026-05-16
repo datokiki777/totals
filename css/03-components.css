@@ -684,6 +684,45 @@ html.controls-collapsed .control-deck{
     0 8px 16px rgba(2,6,23,.16);
 }
 
+.summary-income-strip{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+  padding:8px 10px;
+  border:1px solid rgba(148,163,184,.14);
+  border-radius:22px;
+  background:rgba(255,255,255,.03);
+}
+
+.summary-income-strip .finance-pill{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:36px;
+  padding:0 14px;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.16);
+  background:rgba(255,255,255,.05);
+}
+
+.summary-income-strip .finance-pill > span{
+  color:rgba(230,237,247,.82);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.summary-income-strip .finance-pill > b{
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+
 .summary-context-box{
   margin-top:10px;
 }
