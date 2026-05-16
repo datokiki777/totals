@@ -182,6 +182,23 @@ async function switchGroup(groupId) {
   if (appState.uiMode === "review") renderReview();
 }
 
+async function switchToNextGroup() {
+  const workspaceGroups = appState.groups.filter((g) =>
+    appState.workspaceMode === "archive"
+      ? g.archived === true
+      : g.archived !== true
+  );
+
+  if (!workspaceGroups.length) return;
+
+  const currentIndex = workspaceGroups.findIndex((g) => g.id === appState.activeGroupId);
+  const nextIndex = currentIndex >= 0
+    ? (currentIndex + 1) % workspaceGroups.length
+    : 0;
+
+  await switchGroup(workspaceGroups[nextIndex].id);
+}
+
 /* =========================
    Find Group by Name (for merge)
 ========================= */

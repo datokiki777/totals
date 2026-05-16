@@ -32,10 +32,53 @@ async function initControlsToggleAsync() {
     if (saved === true) rootEl.classList.add("controls-collapsed");
     else rootEl.classList.remove("controls-collapsed");
   } catch(e) { console.error(e); }
-  controlsToggle?.addEventListener("click", async () => {
+
+  const toggleControlsPanel = async () => {
     const next = !rootEl.classList.contains("controls-collapsed");
     rootEl.classList.toggle("controls-collapsed", next);
     await dbSet(CONTROLS_COLLAPSED_KEY, next);
+  };
+
+  if (!controlsToggle) return;
+
+  let controlsPressTimer = null;
+  let controlsLongPressed = false;
+  const controlsLongPressMs = 550;
+
+  const clearControlsPressTimer = () => {
+    if (!controlsPressTimer) return;
+    clearTimeout(controlsPressTimer);
+    controlsPressTimer = null;
+  };
+
+  const startControlsPress = () => {
+    clearControlsPressTimer();
+    controlsLongPressed = false;
+
+    controlsPressTimer = setTimeout(() => {
+      controlsPressTimer = null;
+      controlsLongPressed = true;
+      toggleControlsPanel().catch(console.error);
+    }, controlsLongPressMs);
+  };
+
+  controlsToggle.addEventListener("pointerdown", (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    startControlsPress();
+  });
+
+  controlsToggle.addEventListener("pointerup", clearControlsPressTimer);
+  controlsToggle.addEventListener("pointercancel", clearControlsPressTimer);
+  controlsToggle.addEventListener("pointerleave", clearControlsPressTimer);
+
+  controlsToggle.addEventListener("click", async (e) => {
+    if (controlsLongPressed) {
+      e.preventDefault();
+      controlsLongPressed = false;
+      return;
+    }
+
+    await switchToNextGroup();
   });
 }
 
@@ -105,7 +148,7 @@ function setControlsForMode(mode) {
   const hasActiveSelection = !!activeGroup();
   if (editActions) editActions.style.display = isEdit ? "flex" : "none";
   if (reviewActions) reviewActions.style.display = isEdit ? "none" : "flex";
-  const allBtns = [groupPickerBtn, addGroupBtn, renameGroupBtn, deleteGroupBtn, document.getElementById("archiveGroupBtn"), defaultRateInput, addPeriodBtn, resetBtn, topMenuBtn];
+  const allBtns = [groupPickerBtn, addGroupBtn, renameGroupBtn, deleteGroupBtn, document.getElementById("archiveGroupBtn"), defaultRateInput, defaultSalaryInput, addPeriodBtn, resetBtn, topMenuBtn];
   allBtns.forEach((btn) => {
     if (!btn) return;
     const alwaysAllowed = btn === topMenuBtn || btn === groupPickerBtn;

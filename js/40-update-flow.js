@@ -59,6 +59,12 @@ async function updateAfterStatusChange(periodId) {
   if (appState.uiMode === "review") renderReview();
 }
 
+async function updateAfterSalaryChange() {
+  renderGrandTotals();
+  renderOverviewSection();
+  if (appState.uiMode === "review") renderReview();
+}
+
 async function updateAfterGlobalChange() {
   renderGrandTotals();
   await renderMonthlySection();

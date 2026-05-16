@@ -15,12 +15,15 @@ const tplPeriod = document.getElementById("periodTpl");
 const tplRow = document.getElementById("rowTpl");
 
 const defaultRateInput = document.getElementById("defaultRate");
+const defaultSalaryInput = document.getElementById("defaultSalary");
 const addPeriodBtn = document.getElementById("addPeriodBtn");
 const resetBtn = document.getElementById("resetBtn");
 
 const grandGrossEl = document.getElementById("grandGross");
 const grandNetEl = document.getElementById("grandNet");
 const grandMyEl = document.getElementById("grandMy");
+const grandUnpaidEl = document.getElementById("grandUnpaid");
+const grandIncomeEl = document.getElementById("grandIncome");
 
 const summaryCollapseBtn = document.getElementById("summaryCollapseBtn");
 const monthPrevBtn = document.getElementById("monthPrevBtn");

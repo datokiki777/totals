@@ -109,6 +109,12 @@ function normalizeMoneyToStoredInteger(value) {
   return String(Math.round(n));
 }
 
+function normalizeSalaryAmount(value) {
+  const n = parseMoney(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.round(n);
+}
+
 function clampRate(percent) {
   let p = Number(percent);
   if (!Number.isFinite(p)) p = 0;

@@ -40,6 +40,7 @@ async function render() {
   const g = activeGroup();
   if (!g?.data) {
     if (defaultRateInput) defaultRateInput.value = "";
+    if (defaultSalaryInput) defaultSalaryInput.value = "";
     if (elPeriods) {
       const emptyLabel =
         appState.workspaceMode === "archive"
@@ -62,6 +63,7 @@ async function render() {
   const st = g.data;
 
   if (defaultRateInput) defaultRateInput.value = String(st.defaultRatePercent);
+  if (defaultSalaryInput) defaultSalaryInput.value = String(st.defaultSalaryPer28Days || 0);
 
   if (!elPeriods || !tplPeriod || !tplRow) {
     recalcAndRenderTotals();

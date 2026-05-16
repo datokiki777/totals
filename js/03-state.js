@@ -28,9 +28,10 @@ function emptyRow() {
   return { id: uuid(), customer: "", city: "", gross: "", net: "", done: "none" };
 }
 
-function defaultGroupData(rate = 15.0) {
+function defaultGroupData(rate = 15.0, salaryPer28Days = 0) {
   return {
     defaultRatePercent: clampRate(rate),
+    defaultSalaryPer28Days: normalizeSalaryAmount(salaryPer28Days),
     periods: [{ id: uuid(), from: "", to: "", rows: [emptyRow()] }],
   };
 }
@@ -38,6 +39,9 @@ function defaultGroupData(rate = 15.0) {
 function normalizeGroupData(d) {
   const out = {
     defaultRatePercent: clampRate(d?.defaultRatePercent ?? 13.5),
+    defaultSalaryPer28Days: normalizeSalaryAmount(
+      d?.defaultSalaryPer28Days ?? d?.defaultSalaryAmount ?? 0
+    ),
     periods: Array.isArray(d?.periods) ? d.periods : [],
   };
   if (out.periods.length === 0) out.periods = defaultGroupData().periods;

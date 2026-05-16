@@ -8,6 +8,7 @@ function calcPeriodTotals(period, ratePercent) {
   let gross = 0;
   let net = 0;
   let my = 0;
+  let unpaid = 0;
 
   rows.forEach((r) => {
     const grossRaw = String(r?.gross ?? "").trim();
@@ -16,7 +17,6 @@ function calcPeriodTotals(period, ratePercent) {
     const hasGross = grossRaw !== "";
     const hasNet = netRaw !== "";
 
-    // ორივე ცარიელია → საერთოდ skip
     if (!hasGross && !hasNet) return;
 
     const grossVal = hasGross ? parseMoney(grossRaw) : 0;
@@ -25,7 +25,10 @@ function calcPeriodTotals(period, ratePercent) {
     if (Number.isFinite(grossVal)) gross += grossVal;
     if (Number.isFinite(netVal)) net += netVal;
 
-    // My €
+    const grossShare = hasGross && Number.isFinite(grossVal) ? grossVal * rate : 0;
+    const netShare = hasNet && Number.isFinite(netVal) ? netVal * rate : 0;
+    unpaid += grossShare - netShare;
+
     let base = 0;
     if (hasNet && Number.isFinite(netVal)) {
       base = netVal;
@@ -36,7 +39,7 @@ function calcPeriodTotals(period, ratePercent) {
     my += base * rate;
   });
 
-  return { gross, net, my };
+  return { gross, net, my, unpaid };
 }
 
 function calcEditPeriodMyOnly(period, ratePercent) {
@@ -70,18 +73,117 @@ function calcEditPeriodMyOnly(period, ratePercent) {
   return my;
 }
 
+function rowHasMoneyValue(row, key) {
+  const raw = String(row?.[key] ?? "").trim();
+  if (!raw) return false;
+  return Number.isFinite(parseMoney(raw));
+}
+
+function periodHasMoneyValue(period, key) {
+  return (period?.rows || []).some((row) => rowHasMoneyValue(row, key));
+}
+
+function calcCoveredWeeks(periods, shouldIncludePeriod) {
+  const ranges = (periods || [])
+    .map((p) => {
+      if (typeof shouldIncludePeriod === "function" && !shouldIncludePeriod(p)) return null;
+
+      const from = parseDateOnly(p?.from);
+      const to = parseDateOnly(p?.to);
+      if (!from || !to || from > to) return null;
+
+      return { from: startOfDay(from), to: startOfDay(to) };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.from - b.from);
+
+  if (!ranges.length) return 0;
+
+  let weeks = 0;
+  let currentFrom = ranges[0].from;
+  let currentTo = ranges[0].to;
+
+  for (let i = 1; i < ranges.length; i++) {
+    const range = ranges[i];
+    const nextDayAfterCurrent = new Date(currentTo);
+    nextDayAfterCurrent.setDate(nextDayAfterCurrent.getDate() + 1);
+
+    if (range.from <= nextDayAfterCurrent) {
+      if (range.to > currentTo) currentTo = range.to;
+      continue;
+    }
+
+    weeks += Math.ceil(daysBetweenInclusive(currentFrom, currentTo) / 7);
+    currentFrom = range.from;
+    currentTo = range.to;
+  }
+
+  weeks += Math.ceil(daysBetweenInclusive(currentFrom, currentTo) / 7);
+  return weeks;
+}
+
+function calcGroupFinancials(group) {
+  const st = group?.data || {};
+  const periods = st.periods || [];
+  const totals = {
+    gross: 0,
+    net: 0,
+    my: 0,
+    unpaid: 0,
+    salary: 0,
+    salaryAccrued: 0,
+    salaryPaid: 0,
+    income: 0,
+    grossWeeks: 0,
+    paidWeeks: 0
+  };
+
+  periods.forEach((p) => {
+    const t = calcPeriodTotals(p, st.defaultRatePercent);
+    totals.gross += t.gross;
+    totals.net += t.net;
+    totals.my += t.my;
+    totals.unpaid += t.unpaid;
+  });
+
+  const weeklySalary = normalizeSalaryAmount(st.defaultSalaryPer28Days) / 4;
+  totals.grossWeeks = calcCoveredWeeks(periods, (p) => periodHasMoneyValue(p, "gross"));
+  totals.paidWeeks = calcCoveredWeeks(periods, (p) => periodHasMoneyValue(p, "net"));
+  totals.salaryAccrued = weeklySalary * totals.grossWeeks;
+  totals.salaryPaid = weeklySalary * Math.min(totals.paidWeeks, totals.grossWeeks);
+  totals.salary = Math.max(0, totals.salaryAccrued - totals.salaryPaid);
+  totals.income = totals.unpaid - totals.salary;
+
+  return totals;
+}
+
 function calcGrandTotalsByMode(mode = appState.grandMode) {
-  const grand = { gross: 0, net: 0, my: 0 };
+  const grand = {
+    gross: 0,
+    net: 0,
+    my: 0,
+    unpaid: 0,
+    salary: 0,
+    salaryAccrued: 0,
+    salaryPaid: 0,
+    income: 0,
+    grossWeeks: 0,
+    paidWeeks: 0
+  };
   const groups = getGroupsByMode(mode);
 
   groups.forEach((gr) => {
-    const st = gr.data;
-    st.periods.forEach((p) => {
-      const t = calcPeriodTotals(p, st.defaultRatePercent);
-      grand.gross += t.gross;
-      grand.net += t.net;
-      grand.my += t.my;
-    });
+    const t = calcGroupFinancials(gr);
+    grand.gross += t.gross;
+    grand.net += t.net;
+    grand.my += t.my;
+    grand.unpaid += t.unpaid;
+    grand.salary += t.salary;
+    grand.salaryAccrued += t.salaryAccrued;
+    grand.salaryPaid += t.salaryPaid;
+    grand.income += t.income;
+    grand.grossWeeks += t.grossWeeks;
+    grand.paidWeeks += t.paidWeeks;
   });
 
   return grand;

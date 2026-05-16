@@ -114,7 +114,15 @@ defaultRateInput?.addEventListener("input", async () => {
   g.data.defaultRatePercent = clampRate(defaultRateInput.value);
   await saveState();
   await updateAfterGlobalChange();
-  if (appState.uiMode === "review") renderReview();
+});
+
+defaultSalaryInput?.addEventListener("input", async () => {
+  const g = activeGroup();
+  if (!g?.data) return;
+  g.data.defaultSalaryPer28Days = normalizeSalaryAmount(defaultSalaryInput.value);
+  defaultSalaryInput.value = String(g.data.defaultSalaryPer28Days || "");
+  await saveState();
+  await updateAfterSalaryChange();
 });
 
 /* =========================

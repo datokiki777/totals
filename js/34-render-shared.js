@@ -21,6 +21,18 @@ function renderGrandTotals() {
     grandMyEl.classList.add("total-flash");
     setTimeout(() => grandMyEl.classList.remove("total-flash"), 280);
   }
+
+  if (grandUnpaidEl) {
+    animateNumber(grandUnpaidEl, grand.unpaid);
+    grandUnpaidEl.classList.add("total-flash");
+    setTimeout(() => grandUnpaidEl.classList.remove("total-flash"), 280);
+  }
+
+  if (grandIncomeEl) {
+    animateNumber(grandIncomeEl, grand.income);
+    grandIncomeEl.classList.add("total-flash");
+    setTimeout(() => grandIncomeEl.classList.remove("total-flash"), 280);
+  }
 }
 
 function updateControlsButtonLabel() {

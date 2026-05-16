@@ -443,6 +443,8 @@ async function handleExportExcel() {
     appState.groups.forEach((group) => {
       const groupName = group.archived ? `📦 ${group.name}` : group.name;
       const rate = clampRate(Number(group?.data?.defaultRatePercent ?? 0));
+      const salaryPer28Days = normalizeSalaryAmount(group?.data?.defaultSalaryPer28Days ?? 0);
+      const groupFinancials = calcGroupFinancials(group);
 
       let groupGross = 0;
       let groupNet = 0;
@@ -469,6 +471,7 @@ async function handleExportExcel() {
             Group: groupName,
             Archived: group.archived ? "yes" : "no",
             DefaultRatePercent: rate,
+            DefaultSalaryPer28Days: salaryPer28Days,
             From: period.from || "",
             To: period.to || "",
             Client: r.customer || "",
@@ -484,11 +487,17 @@ async function handleExportExcel() {
         Group: groupName,
         Archived: group.archived ? "yes" : "no",
         DefaultRatePercent: rate,
+        DefaultSalaryPer28Days: salaryPer28Days,
         Periods: (group.data?.periods || []).length,
         Rows: (group.data?.periods || []).reduce((sum, p) => sum + ((p.rows || []).length), 0),
         Gross: groupGross,
         Net: groupNet,
         "My €": groupMy,
+        Unpaid: groupFinancials.unpaid,
+        SalaryAccrued: groupFinancials.salaryAccrued,
+        SalaryPaid: groupFinancials.salaryPaid,
+        SalaryRemaining: groupFinancials.salary,
+        Income: groupFinancials.income,
         Done: doneCount,
         Fail: failCount,
         Fixed: fixedCount
@@ -507,6 +516,7 @@ async function handleExportExcel() {
       { wch: 20 }, // Group
       { wch: 10 }, // Archived
       { wch: 18 }, // DefaultRatePercent
+      { wch: 24 }, // DefaultSalaryPer28Days
       { wch: 12 }, // From
       { wch: 12 }, // To
       { wch: 24 }, // Client
@@ -520,11 +530,17 @@ async function handleExportExcel() {
       { wch: 20 }, // Group
       { wch: 10 }, // Archived
       { wch: 18 }, // DefaultRatePercent
+      { wch: 24 }, // DefaultSalaryPer28Days
       { wch: 10 }, // Periods
       { wch: 10 }, // Rows
       { wch: 14 }, // Gross
       { wch: 14 }, // Net
       { wch: 14 }, // My €
+      { wch: 14 }, // Unpaid
+      { wch: 14 }, // SalaryAccrued
+      { wch: 14 }, // SalaryPaid
+      { wch: 16 }, // SalaryRemaining
+      { wch: 14 }, // Income
       { wch: 10 }, // Done
       { wch: 10 }, // Fail
       { wch: 10 }  // Fixed
@@ -605,6 +621,12 @@ async function handleImportExcelChange(e) {
       rate: "DefaultRatePercent",
       percent: "DefaultRatePercent",
 
+      defaultsalaryper28days: "DefaultSalaryPer28Days",
+      defaultsalary28days: "DefaultSalaryPer28Days",
+      defaultsalary: "DefaultSalaryPer28Days",
+      salaryper28days: "DefaultSalaryPer28Days",
+      salary: "DefaultSalaryPer28Days",
+
       from: "From",
       datefrom: "From",
 
@@ -651,6 +673,7 @@ async function handleImportExcelChange(e) {
         Group: out.Group ?? "",
         Archived: out.Archived ?? "",
         DefaultRatePercent: out.DefaultRatePercent ?? "",
+        DefaultSalaryPer28Days: out.DefaultSalaryPer28Days ?? "",
         From: out.From ?? "",
         To: out.To ?? "",
         Client: out.Client ?? "",
@@ -691,6 +714,9 @@ async function handleImportExcelChange(e) {
       const hasValidRate = Number.isFinite(parsedRate) && parsedRate >= 0 && parsedRate <= 100;
       const rate = hasValidRate ? clampRate(parsedRate) : null;
 
+      const rawSalaryValue = String(row.DefaultSalaryPer28Days ?? "").trim();
+      const salary = rawSalaryValue === "" ? null : normalizeSalaryAmount(rawSalaryValue);
+
       const key = `${cleanGroupName}__${isArchived ? "1" : "0"}`;
 
       if (!groupMap.has(key)) {
@@ -700,9 +726,11 @@ async function handleImportExcelChange(e) {
           archived: isArchived,
           data: {
             defaultRatePercent: rate ?? 0,
+            defaultSalaryPer28Days: salary ?? 0,
             periods: []
           },
           _firstRateSeen: rate,
+          _firstSalarySeen: salary,
           _rateConflict: false
         });
       }
@@ -720,6 +748,13 @@ async function handleImportExcelChange(e) {
           if (!rateConflicts.includes(`${isArchived ? "📦 " : ""}${cleanGroupName}`)) {
             rateConflicts.push(`${isArchived ? "📦 " : ""}${cleanGroupName}`);
           }
+        }
+      }
+
+      if (salary !== null) {
+        if (group._firstSalarySeen === null || group._firstSalarySeen === undefined) {
+          group._firstSalarySeen = salary;
+          group.data.defaultSalaryPer28Days = salary;
         }
       }
 
@@ -756,6 +791,9 @@ async function handleImportExcelChange(e) {
       if (!Number.isFinite(g.data.defaultRatePercent)) {
         g.data.defaultRatePercent = 0;
       }
+      if (!Number.isFinite(g.data.defaultSalaryPer28Days)) {
+        g.data.defaultSalaryPer28Days = 0;
+      }
     });
 
     const importedGroups = [...groupMap.values()].map((g) => ({
@@ -764,6 +802,7 @@ async function handleImportExcelChange(e) {
       archived: g.archived,
       data: {
         defaultRatePercent: clampRate(g.data.defaultRatePercent),
+        defaultSalaryPer28Days: normalizeSalaryAmount(g.data.defaultSalaryPer28Days),
         periods: g.data.periods.map((p) => ({
           id: p.id,
           from: p.from,
