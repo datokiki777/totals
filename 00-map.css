@@ -38,6 +38,8 @@
 - .review-card
 - .period-card
 - .summary-title-btn
+- .summary-income-strip
+- .summary-income-strip .finance-pill
 - .period-collapse-btn
 - .review-group-toggle
 - .review-head-collapsible / .review-head-main / .review-head-side
@@ -87,6 +89,9 @@
 
 06-responsive.css
 - @media (mobile)
+- .summary-income-strip mobile layout
+  → stacks Unpaid / Income pills to 1 column on narrow screens
+  → reduces padding/font size to avoid overflow
 - controls responsive
 - buttons stretch
 - review layout mobile
@@ -113,6 +118,7 @@
 - buttons (light)
 - cards (light)
 - inputs (light)
+- summary-income-strip (light)
 - mode-switch (light)
 - workspace-switch (light)
 - top-menu (light)

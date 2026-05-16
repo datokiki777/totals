@@ -21,7 +21,9 @@
 - workspaceActiveBtn, workspaceArchiveBtn
 - editView, reviewView, elPeriods
 - tplPeriod, tplRow, defaultRateInput
+- defaultSalaryInput
 - grandGrossEl, grandNetEl, grandMyEl
+- grandUnpaidEl, grandIncomeEl
 - summaryCollapseBtn, monthPrevBtn, monthNextBtn
 - monthLabel, monthGrossEl, monthNetEl, monthMyEl
 - overviewDateRangeEl, overviewDurationEl
@@ -59,6 +61,8 @@
   → All mode: current group first, then newest groups below
 - defaultAppState(), normalizeAppState(), normalizeGroupData()
 - emptyRow(), defaultGroupData()
+  → group data includes defaultSalaryPer28Days
+  → normalizeAppState() migrates older groups with salary = 0
 - isDefaultEmptyGroup(g)
 - cleanupDefaultGroup()
   → removes empty default template group when real groups exist
@@ -99,8 +103,10 @@
 - getDigitsOnly(), isSuspiciousNetComparedToGross()
 - sanitizeIntegerMoneyInput()
 - normalizeMoneyToStoredInteger()
+- normalizeSalaryAmount()
   → whole-euro only input/import normalization
   → decimals/cent values rounded on import
+  → salary values normalize to non-negative whole euros
 
 ═══════════════════════════════════════
 10-calc-dates.js
@@ -244,6 +250,10 @@ WORKSPACE & MODE:
 - addGroup(), renameGroup(), deleteGroup()
   → addGroup() calls cleanupDefaultGroup()
 - toggleArchiveGroup(), switchGroup()
+- switchToNextGroup()
+  → cycles current workspace groups
+  → wraps from last group back to first
+  → used by short press on controlsToggle
 - findGroupByName(), cloneAndReIdGroup()
 - mergeAppState(), isSameMergeRow(), normalizeMergeText()
   → mergeAppState() calls cleanupDefaultGroup()
@@ -316,6 +326,8 @@ WORKSPACE & MODE:
 ═══════════════════════════════════════
 SHARED UI (no full render):
 - renderGrandTotals()
+  → Gross / Net / My
+  → Unpaid / Income summary strip
 - renderEditPeriodTotals(periodId)
 - updateControlsButtonLabel(), renderGroupSelect()
 - updateFloatingAddClientVisibility()
@@ -353,6 +365,9 @@ GRANULAR UPDATE ORCHESTRATORS:
 - updateAfterRowChange(periodId)
 - updateAfterPeriodMetaChange(periodId)
 - updateAfterStatusChange(periodId)
+- updateAfterSalaryChange()
+  → salary changes update overview totals only
+  → skips monthly recalculation because salary does not affect monthly Gross/Net/My
 - updateAfterGlobalChange()
 - recalcAndRenderTotals() - fallback
 
@@ -366,6 +381,12 @@ GLOBAL EVENT LISTENERS:
 - Group management (add/rename/delete)
 - Archive group button
 - Default rate input
+- Default salary / 28d input
+  → stores defaultSalaryPer28Days on active group
+  → uses updateAfterSalaryChange() for lighter recalculation
+- Controls button short/long press:
+  → short press = switchToNextGroup()
+  → long press = collapse/expand controls panel
 - Add period / reset group buttons
 - Scroll to top, floating add client
 - Review group collapse toggle
@@ -381,6 +402,7 @@ GLOBAL EVENT LISTENERS:
   - popstate close support
 - Cloud sync hooks:
   → default rate input = autosync
+  → default salary input = autosync
   → add period = immediate sync
   → reset group = immediate sync
   → archive/unarchive = immediate sync
@@ -437,8 +459,25 @@ DATA CHANGE → granular update (40-update-flow.js):
 - status change → updateAfterStatusChange()
 - from/to date → updateAfterPeriodMetaChange()
 - default rate → updateAfterGlobalChange()
+- default salary → updateAfterSalaryChange()
 - grand mode toggle → updateAfterGlobalChange()
 - month cursor shift → renderMonthlySection()
+
+SALARY / INCOME LOGIC:
+- defaultSalaryPer28Days = group salary for 28 days / 4 weeks
+- weekly salary = defaultSalaryPer28Days / 4
+- Gross period weeks:
+  → periods with at least one valid Gross value
+  → ranges are merged and rounded up by week
+- Paid period weeks:
+  → periods with at least one valid Net value
+  → ranges are merged and rounded up by week
+- salaryAccrued = weekly salary * grossWeeks
+- salaryPaid = weekly salary * min(paidWeeks, grossWeeks)
+- salary remaining = max(0, salaryAccrued - salaryPaid)
+- Unpaid = (Gross * group %) - (Net * group %)
+- Income = Unpaid - salary remaining
+- Current/All/Archive use the same workspace-aware group selection as existing totals
 
 UI CHROME SYNC → refreshUiChrome() / refreshFullUiState() (35-ui-sync.js):
 - workspace badges
