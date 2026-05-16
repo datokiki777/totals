@@ -83,6 +83,15 @@ function periodHasMoneyValue(period, key) {
   return (period?.rows || []).some((row) => rowHasMoneyValue(row, key));
 }
 
+function weeksBetweenRounded(from, to) {
+  if (!(from instanceof Date) || !(to instanceof Date) || from > to) return 0;
+
+  const elapsedDays = Math.ceil((startOfDay(to) - startOfDay(from)) / 86400000);
+  if (elapsedDays <= 0) return 1;
+
+  return Math.ceil(elapsedDays / 7);
+}
+
 function calcCoveredWeeks(periods, shouldIncludePeriod) {
   const ranges = (periods || [])
     .map((p) => {
@@ -113,12 +122,12 @@ function calcCoveredWeeks(periods, shouldIncludePeriod) {
       continue;
     }
 
-    weeks += Math.ceil(daysBetweenInclusive(currentFrom, currentTo) / 7);
+    weeks += weeksBetweenRounded(currentFrom, currentTo);
     currentFrom = range.from;
     currentTo = range.to;
   }
 
-  weeks += Math.ceil(daysBetweenInclusive(currentFrom, currentTo) / 7);
+  weeks += weeksBetweenRounded(currentFrom, currentTo);
   return weeks;
 }
 
