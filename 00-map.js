@@ -305,10 +305,13 @@ WORKSPACE & MODE:
 ═══════════════════════════════════════
 - render() - FULL EDIT VIEW RENDER (structural changes)
 - Paid Weeks input appears only in edit period cards
+  → shown in the period collapse/header card beside group/date preview
   → stored as period.paidWeeks
   → empty value counts as 0
+  → capped to calcPeriodWeeks(period)
 - Review period cards show only a compact paid weeks badge when paidWeeks > 0
   → badge format: 💶 1w
+  → yellow partial badge when paidWeeks < total period weeks
   → no input in Review mode
 - gross/net inputs restricted to digits only
 - inputMode numeric + integer sanitizing on input
@@ -483,6 +486,9 @@ SALARY / INCOME LOGIC:
   → periods with at least one valid Gross value
   → ranges are merged and rounded up by week
   → week duration uses elapsed days (20→27 = 7 days = 1 week)
+- Per-period week cap:
+  → calcPeriodWeeks(period)
+  → Paid Weeks input cannot save more than this value
 - Paid period weeks:
   → comes only from period.paidWeeks
   → empty / missing / 0 = unpaid salary

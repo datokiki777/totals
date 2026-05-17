@@ -15,6 +15,8 @@
 - .controls / .actions-left / .actions-right
 - .paid-weeks-field
   → compact 70px centered input, does not stretch on mobile
+- .period-collapse-paid-weeks
+  → places Paid Weeks in the period collapse/header card
 - .container
 - .summary-grid
 - .toggle (layout only)
@@ -96,6 +98,7 @@
   → reduces padding/font size to avoid overflow
 - .paid-weeks-field mobile layout
   → keeps compact 70px input on narrow screens
+  → hides label in the tight header row
 - controls responsive
 - buttons stretch
 - review layout mobile
