@@ -83,6 +83,13 @@ function periodHasMoneyValue(period, key) {
   return (period?.rows || []).some((row) => rowHasMoneyValue(row, key));
 }
 
+function calcPeriodWeeks(period) {
+  const from = parseDateOnly(period?.from);
+  const to = parseDateOnly(period?.to);
+  if (!from || !to || from > to) return 0;
+  return weeksBetweenRounded(from, to);
+}
+
 function weeksBetweenRounded(from, to) {
   if (!(from instanceof Date) || !(to instanceof Date) || from > to) return 0;
 

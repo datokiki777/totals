@@ -98,7 +98,23 @@ async function render() {
 
     if (fromEl) fromEl.value = p.from;
     if (toEl) toEl.value = p.to;
-    if (paidWeeksEl) paidWeeksEl.value = p.paidWeeks ?? "";
+    const syncPaidWeeksInputMax = () => {
+      if (!paidWeeksEl) return;
+
+      const maxWeeks = calcPeriodWeeks(p);
+      paidWeeksEl.max = String(maxWeeks);
+
+      const current = normalizePaidWeeks(p.paidWeeks);
+      const capped = maxWeeks > 0 ? Math.min(current, maxWeeks) : 0;
+
+      if (current !== capped) {
+        p.paidWeeks = capped > 0 ? String(capped) : "";
+      }
+
+      paidWeeksEl.value = p.paidWeeks ?? "";
+    };
+
+    syncPaidWeeksInputMax();
 
     if (collapseMeta) {
       collapseMeta.textContent = formatPeriodPreview(p.from, p.to);
@@ -142,6 +158,7 @@ async function render() {
 
       p.from = newFrom;
       if (collapseMeta) collapseMeta.textContent = formatPeriodPreview(p.from, p.to);
+      syncPaidWeeksInputMax();
 
       await saveState();
       await updateAfterPeriodMetaChange(p.id);
@@ -163,6 +180,7 @@ async function render() {
 
       p.to = newTo;
       if (collapseMeta) collapseMeta.textContent = formatPeriodPreview(p.from, p.to);
+      syncPaidWeeksInputMax();
 
       await saveState();
       await updateAfterPeriodMetaChange(p.id);
@@ -174,11 +192,25 @@ async function render() {
         paidWeeksEl.value = cleaned;
       }
 
-      p.paidWeeks = cleaned === "" ? "" : String(normalizePaidWeeks(cleaned));
+      const maxWeeks = calcPeriodWeeks(p);
+      const next = cleaned === "" ? 0 : normalizePaidWeeks(cleaned);
+      const capped = maxWeeks > 0 ? Math.min(next, maxWeeks) : 0;
+
+      p.paidWeeks = capped > 0 ? String(capped) : "";
+      paidWeeksEl.value = p.paidWeeks;
+
       queueDeferredSave(totalsFieldSaveTimers, `${p.id}-paidWeeks`, 120, async () => {
         await saveState();
         await updateAfterSalaryChange();
       });
+    });
+
+    paidWeeksEl?.addEventListener("pointerdown", (e) => {
+      e.stopPropagation();
+    });
+
+    paidWeeksEl?.addEventListener("click", (e) => {
+      e.stopPropagation();
     });
 
     paidWeeksEl?.addEventListener("change", async () => {

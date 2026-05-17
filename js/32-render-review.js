@@ -69,8 +69,10 @@ function renderReview() {
         const to = formatDateLocal(p.to) || "—";
 
         const paidWeeks = normalizePaidWeeks(p.paidWeeks);
+        const totalWeeks = periodHasMoneyValue(p, "gross") ? calcPeriodWeeks(p) : 0;
+        const isPartialPaidWeeks = paidWeeks > 0 && totalWeeks > 0 && paidWeeks < totalWeeks;
         const paidWeeksBadgeHtml = paidWeeks > 0
-          ? `<span class="badge paid-weeks-badge">&#128182; ${paidWeeks}w</span>`
+          ? `<span class="badge paid-weeks-badge ${isPartialPaidWeeks ? "is-partial" : ""}">&#128182; ${paidWeeks}w</span>`
           : "";
 
         const clients = p.rows.map((r) => {
