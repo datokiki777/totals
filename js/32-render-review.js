@@ -68,6 +68,11 @@ function renderReview() {
         const from = formatDateLocal(p.from) || "—";
         const to = formatDateLocal(p.to) || "—";
 
+        const paidWeeks = normalizePaidWeeks(p.paidWeeks);
+        const paidWeeksBadgeHtml = paidWeeks > 0
+          ? `<span class="badge paid-weeks-badge">&#128182; ${paidWeeks}w</span>`
+          : "";
+
         const clients = p.rows.map((r) => {
           const name = r.customer?.trim() || "Client";
           const city = r.city?.trim() || "—";
@@ -111,6 +116,7 @@ function renderReview() {
                 <span class="badge">Gross: <b>${fmt(t.gross)}</b></span>
                 <span class="badge">Net: <b>${fmt(t.net)}</b></span>
                 <span class="badge">My €: <b>${fmt(t.my)}</b></span>
+                ${paidWeeksBadgeHtml}
               </div>
             </summary>
 
