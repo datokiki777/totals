@@ -65,6 +65,25 @@ function renderGroupSelect() {
   groupPickerBtnText.textContent = g.archived ? `📦 ${g.name}` : g.name;
 }
 
+function syncControlsInputs() {
+  const g = activeGroup();
+  const st = g?.data;
+
+  if (!st) {
+    if (defaultRateInput) defaultRateInput.value = "";
+    if (defaultSalaryInput) defaultSalaryInput.value = "";
+    return;
+  }
+
+  if (defaultRateInput) {
+    defaultRateInput.value = String(st.defaultRatePercent ?? "");
+  }
+
+  if (defaultSalaryInput) {
+    defaultSalaryInput.value = String(st.defaultSalaryPer28Days || 0);
+  }
+}
+
 function updateFloatingAddClientVisibility() {
   if (!fabAddClient) return;
   const isEdit = appState.uiMode === "edit";

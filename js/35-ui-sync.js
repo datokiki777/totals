@@ -7,6 +7,7 @@ function refreshUiChrome() {
   updateWorkspaceSwitchUI();
   renderGroupSelect();
   updateControlsButtonLabel();
+  syncControlsInputs();
 
   document.documentElement.classList.toggle(
     "is-edit",

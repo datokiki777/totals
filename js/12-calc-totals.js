@@ -157,7 +157,7 @@ function calcGroupFinancials(group) {
 
   const weeklySalary = normalizeSalaryAmount(st.defaultSalaryPer28Days) / 4;
   totals.grossWeeks = calcCoveredWeeks(periods, (p) => periodHasMoneyValue(p, "gross"));
-  totals.paidWeeks = calcCoveredWeeks(periods, (p) => periodHasMoneyValue(p, "net"));
+  totals.paidWeeks = periods.reduce((sum, p) => sum + normalizePaidWeeks(p?.paidWeeks), 0);
   totals.salaryAccrued = weeklySalary * totals.grossWeeks;
   totals.salaryPaid = weeklySalary * Math.min(totals.paidWeeks, totals.grossWeeks);
   totals.salary = Math.max(0, totals.salaryAccrued - totals.salaryPaid);

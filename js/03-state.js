@@ -32,7 +32,7 @@ function defaultGroupData(rate = 15.0, salaryPer28Days = 0) {
   return {
     defaultRatePercent: clampRate(rate),
     defaultSalaryPer28Days: normalizeSalaryAmount(salaryPer28Days),
-    periods: [{ id: uuid(), from: "", to: "", rows: [emptyRow()] }],
+    periods: [{ id: uuid(), from: "", to: "", paidWeeks: "", rows: [emptyRow()] }],
   };
 }
 
@@ -49,6 +49,10 @@ function normalizeGroupData(d) {
     id: p?.id || uuid(),
     from: p?.from || "",
     to: p?.to || "",
+    paidWeeks:
+      p?.paidWeeks === "" || p?.paidWeeks === null || p?.paidWeeks === undefined
+        ? ""
+        : String(normalizePaidWeeks(p?.paidWeeks)),
     rows: Array.isArray(p?.rows) && p.rows.length
       ? p.rows.map((r) => ({
           id: r?.id || uuid(),

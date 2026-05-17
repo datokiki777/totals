@@ -115,6 +115,12 @@ function normalizeSalaryAmount(value) {
   return Math.round(n);
 }
 
+function normalizePaidWeeks(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.floor(n);
+}
+
 function clampRate(percent) {
   let p = Number(percent);
   if (!Number.isFinite(p)) p = 0;

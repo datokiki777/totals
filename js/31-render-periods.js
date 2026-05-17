@@ -86,6 +86,7 @@ async function render() {
 
     const fromEl = node.querySelector(".fromDate");
     const toEl = node.querySelector(".toDate");
+    const paidWeeksEl = node.querySelector(".paidWeeks");
     const rowsTbody = node.querySelector(".rows");
     const addRowBtn = node.querySelector(".addRow");
     const addPeriodInlineBtn = node.querySelector(".addPeriodInline");
@@ -97,6 +98,7 @@ async function render() {
 
     if (fromEl) fromEl.value = p.from;
     if (toEl) toEl.value = p.to;
+    if (paidWeeksEl) paidWeeksEl.value = p.paidWeeks ?? "";
 
     if (collapseMeta) {
       collapseMeta.textContent = formatPeriodPreview(p.from, p.to);
@@ -164,6 +166,26 @@ async function render() {
 
       await saveState();
       await updateAfterPeriodMetaChange(p.id);
+    });
+
+    paidWeeksEl?.addEventListener("input", () => {
+      const cleaned = sanitizeIntegerMoneyInput(paidWeeksEl.value);
+      if (paidWeeksEl.value !== cleaned) {
+        paidWeeksEl.value = cleaned;
+      }
+
+      p.paidWeeks = cleaned === "" ? "" : String(normalizePaidWeeks(cleaned));
+      queueDeferredSave(totalsFieldSaveTimers, `${p.id}-paidWeeks`, 120, async () => {
+        await saveState();
+        await updateAfterSalaryChange();
+      });
+    });
+
+    paidWeeksEl?.addEventListener("change", async () => {
+      await flushDeferredSave(totalsFieldSaveTimers, `${p.id}-paidWeeks`, async () => {
+        await saveState();
+        await updateAfterSalaryChange();
+      });
     });
 
     if (rowsTbody) rowsTbody.innerHTML = "";
@@ -393,6 +415,7 @@ async function render() {
         id: uuid(),
         from: "",
         to: "",
+        paidWeeks: "",
         rows: [emptyRow()],
       };
 
