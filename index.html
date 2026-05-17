@@ -355,6 +355,19 @@
         <div class="period-title">
           <h2>Period</h2>
             <div class="period-group-box">Group</div>
+            <div class="paid-weeks-inline">
+              <label class="field paid-weeks-field">
+                <span>Paid Weeks</span>
+                <input
+                  class="paidWeeks paid-weeks-input"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="0"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
              <div class="period-dates">
             <label class="field">
               <span>From</span>
@@ -365,20 +378,6 @@
               <input class="toDate" type="date" autocomplete="off" />
             </label>
           </div>
-        </div>
-
-        <div class="paid-weeks-inline">
-          <label class="field paid-weeks-field">
-            <span>Paid Weeks</span>
-            <input
-              class="paidWeeks paid-weeks-input"
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              placeholder="0"
-              autocomplete="off"
-            />
-          </label>
         </div>
 
         <div class="period-actions">
