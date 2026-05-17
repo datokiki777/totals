@@ -307,6 +307,9 @@ WORKSPACE & MODE:
 - Paid Weeks input appears only in edit period cards
   → stored as period.paidWeeks
   → empty value counts as 0
+- Review period cards show only a compact paid weeks badge when paidWeeks > 0
+  → badge format: 💶 1w
+  → no input in Review mode
 - gross/net inputs restricted to digits only
 - inputMode numeric + integer sanitizing on input
 

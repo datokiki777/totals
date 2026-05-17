@@ -14,6 +14,7 @@
 - .topbar
 - .controls / .actions-left / .actions-right
 - .paid-weeks-field
+  → compact 70px centered input, does not stretch on mobile
 - .container
 - .summary-grid
 - .toggle (layout only)
@@ -94,7 +95,7 @@
   → stacks Unpaid / Income pills to 1 column on narrow screens
   → reduces padding/font size to avoid overflow
 - .paid-weeks-field mobile layout
-  → full-width input below group label on narrow screens
+  → keeps compact 70px input on narrow screens
 - controls responsive
 - buttons stretch
 - review layout mobile
