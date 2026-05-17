@@ -62,6 +62,7 @@
 - defaultAppState(), normalizeAppState(), normalizeGroupData()
 - emptyRow(), defaultGroupData()
   → group data includes defaultSalaryPer28Days
+  → period data includes paidWeeks
   → normalizeAppState() migrates older groups with salary = 0
 - isDefaultEmptyGroup(g)
 - cleanupDefaultGroup()
@@ -104,9 +105,11 @@
 - sanitizeIntegerMoneyInput()
 - normalizeMoneyToStoredInteger()
 - normalizeSalaryAmount()
+- normalizePaidWeeks()
   → whole-euro only input/import normalization
   → decimals/cent values rounded on import
   → salary values normalize to non-negative whole euros
+  → paidWeeks normalizes to a non-negative integer
 
 ═══════════════════════════════════════
 10-calc-dates.js
@@ -301,6 +304,9 @@ WORKSPACE & MODE:
 31-render-periods.js
 ═══════════════════════════════════════
 - render() - FULL EDIT VIEW RENDER (structural changes)
+- Paid Weeks input appears only in edit period cards
+  → stored as period.paidWeeks
+  → empty value counts as 0
 - gross/net inputs restricted to digits only
 - inputMode numeric + integer sanitizing on input
 
@@ -330,6 +336,9 @@ SHARED UI (no full render):
   → Unpaid / Income summary strip
 - renderEditPeriodTotals(periodId)
 - updateControlsButtonLabel(), renderGroupSelect()
+- syncControlsInputs()
+  → keeps Default % and Default salary / 28d inputs synced from activeGroup()
+  → fixes Review startup before Edit render runs
 - updateFloatingAddClientVisibility()
 - openGroupPickerModal(), closeGroupPickerModal()
 - updateGrandToggleUI()
@@ -344,6 +353,7 @@ CENTRAL UI SYNC:
   - updateWorkspaceSwitchUI()
   - renderGroupSelect()
   - updateControlsButtonLabel()
+  - syncControlsInputs()
   - updateFloatingAddClientVisibility()
   - html.is-edit class sync
 - refreshFullUiState()
@@ -471,9 +481,9 @@ SALARY / INCOME LOGIC:
   → ranges are merged and rounded up by week
   → week duration uses elapsed days (20→27 = 7 days = 1 week)
 - Paid period weeks:
-  → periods with at least one valid Net value
-  → ranges are merged and rounded up by week
-  → week duration uses elapsed days (not inclusive calendar-day count)
+  → comes only from period.paidWeeks
+  → empty / missing / 0 = unpaid salary
+  → Net does not affect salaryPaid
 - salaryAccrued = weekly salary * grossWeeks
 - salaryPaid = weekly salary * min(paidWeeks, grossWeeks)
 - salary remaining = max(0, salaryAccrued - salaryPaid)

@@ -13,6 +13,7 @@
 02-layout.css
 - .topbar
 - .controls / .actions-left / .actions-right
+- .paid-weeks-field
 - .container
 - .summary-grid
 - .toggle (layout only)
@@ -92,6 +93,8 @@
 - .summary-income-strip mobile layout
   → stacks Unpaid / Income pills to 1 column on narrow screens
   → reduces padding/font size to avoid overflow
+- .paid-weeks-field mobile layout
+  → full-width input below group label on narrow screens
 - controls responsive
 - buttons stretch
 - review layout mobile
