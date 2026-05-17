@@ -474,6 +474,7 @@ async function handleExportExcel() {
             DefaultSalaryPer28Days: salaryPer28Days,
             From: period.from || "",
             To: period.to || "",
+            PaidWeeks: normalizePaidWeeks(period.paidWeeks),
             Client: r.customer || "",
             City: r.city || "",
             Gross: parseMoney(r.gross),
@@ -519,6 +520,7 @@ async function handleExportExcel() {
       { wch: 24 }, // DefaultSalaryPer28Days
       { wch: 12 }, // From
       { wch: 12 }, // To
+      { wch: 12 }, // PaidWeeks
       { wch: 24 }, // Client
       { wch: 18 }, // City
       { wch: 14 }, // Gross
@@ -633,6 +635,11 @@ async function handleImportExcelChange(e) {
       to: "To",
       dateto: "To",
 
+      paidweeks: "PaidWeeks",
+      paidweek: "PaidWeeks",
+      paidsalaryweeks: "PaidWeeks",
+      salarypaidweeks: "PaidWeeks",
+
       client: "Client",
       customer: "Client",
       clientname: "Client",
@@ -676,6 +683,7 @@ async function handleImportExcelChange(e) {
         DefaultSalaryPer28Days: out.DefaultSalaryPer28Days ?? "",
         From: out.From ?? "",
         To: out.To ?? "",
+        PaidWeeks: out.PaidWeeks ?? "",
         Client: out.Client ?? "",
         City: out.City ?? "",
         Gross: out.Gross ?? "",
@@ -760,6 +768,7 @@ async function handleImportExcelChange(e) {
 
       const from = String(row.From || "").trim();
       const to = String(row.To || "").trim();
+      const paidWeeks = String(row.PaidWeeks ?? "").trim();
       const periodKey = `${from}__${to}`;
 
       let period = group.data.periods.find((p) => p._excelKey === periodKey);
@@ -769,10 +778,15 @@ async function handleImportExcelChange(e) {
           id: uuid(),
           from,
           to,
+          paidWeeks: paidWeeks === "" ? "" : String(normalizePaidWeeks(paidWeeks)),
           rows: [],
           _excelKey: periodKey
         };
         group.data.periods.push(period);
+      }
+
+      if (paidWeeks !== "" && (period.paidWeeks === "" || period.paidWeeks === undefined || period.paidWeeks === null)) {
+        period.paidWeeks = String(normalizePaidWeeks(paidWeeks));
       }
 
       period.rows.push({
@@ -807,6 +821,7 @@ async function handleImportExcelChange(e) {
           id: p.id,
           from: p.from,
           to: p.to,
+          paidWeeks: p.paidWeeks ?? "",
           rows: p.rows.length ? p.rows : [{
             id: uuid(),
             customer: "",
