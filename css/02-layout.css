@@ -723,35 +723,6 @@ html[data-theme="light"] .month-row{
   width:fit-content;
 }
 
-.paid-weeks-field{
-  display:inline-flex;
-  width:auto;
-  min-width:0;
-  margin:8px 0 2px 8px;
-  vertical-align:top;
-}
-
-.paid-weeks-field input{
-  width:70px;
-  min-width:70px;
-  max-width:70px;
-  min-height:32px;
-  padding:6px 10px;
-  text-align:center;
-}
-
-.period-collapse-paid-weeks{
-  margin:0 8px 0 auto;
-  align-items:center;
-  flex-shrink:0;
-}
-
-.period-collapse-paid-weeks > span{
-  font-size:10px;
-  margin:0 6px 0 0;
-  white-space:nowrap;
-}
-
 /* =========================================================
    14) Status list layout
 ========================================================= */
