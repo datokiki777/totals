@@ -323,6 +323,11 @@
   gap:4px;
 }
 
+.period-card .paid-weeks-badge{
+  background:rgba(45,212,191,.12);
+  border-color:rgba(45,212,191,.24);
+}
+
 .badge b{
   font-weight:900;
 }

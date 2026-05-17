@@ -92,13 +92,16 @@
   }
 
   .paid-weeks-field{
-    display:flex;
-    width:100%;
+    display:inline-flex;
+    width:auto;
     margin:8px 0 2px 0;
   }
 
   .paid-weeks-field input{
-    width:100%;
+    width:70px;
+    min-width:70px;
+    max-width:70px;
+    text-align:center;
   }
 
   .overview-date-row{
