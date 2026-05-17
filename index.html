@@ -346,11 +346,6 @@
       <span class="period-range-preview">— → —</span>
     </span>
 
-    <label class="field paid-weeks-field period-collapse-paid-weeks">
-      <span>Paid Weeks</span>
-      <input class="paidWeeks" type="number" step="1" min="0" inputmode="numeric" autocomplete="off" />
-    </label>
-
        <span class="period-collapse-icon">▾</span>
      </button>
    </div>
@@ -370,6 +365,20 @@
               <input class="toDate" type="date" autocomplete="off" />
             </label>
           </div>
+        </div>
+
+        <div class="paid-weeks-inline">
+          <label class="field paid-weeks-field">
+            <span>Paid Weeks</span>
+            <input
+              class="paidWeeks paid-weeks-input"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </label>
         </div>
 
         <div class="period-actions">

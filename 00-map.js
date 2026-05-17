@@ -305,7 +305,7 @@ WORKSPACE & MODE:
 ═══════════════════════════════════════
 - render() - FULL EDIT VIEW RENDER (structural changes)
 - Paid Weeks input appears only in edit period cards
-  → shown in the period collapse/header card beside group/date preview
+  → shown inline inside period-head between period-title and period-actions
   → stored as period.paidWeeks
   → empty value counts as 0
   → capped to calcPeriodWeeks(period)
