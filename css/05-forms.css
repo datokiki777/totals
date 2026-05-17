@@ -162,3 +162,23 @@
   justify-content: flex-end;
 }
 
+.paid-weeks-inline{
+  margin-left:auto;
+  flex:0 0 86px;
+  width:86px;
+}
+
+.paid-weeks-field{
+  width:86px;
+}
+
+.paid-weeks-input{
+  width:76px !important;
+  min-width:76px !important;
+  max-width:76px !important;
+  height:42px !important;
+  text-align:center;
+  font-weight:900;
+  padding:6px 8px !important;
+}
+

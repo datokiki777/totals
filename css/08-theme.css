@@ -1013,3 +1013,14 @@ html[data-theme="light"] .restore-item.active {
   background: rgba(93,212,255,0.25);
   border-color: rgba(93,212,255,0.50);
 }
+
+html[data-theme="light"] .period-card .paid-weeks-badge.is-partial{
+  background:rgba(251,191,36,.22);
+  border-color:rgba(217,119,6,.36);
+  color:#92400e !important;
+}
+
+html[data-theme="light"] .period-card .paid-weeks-badge.is-partial b,
+html[data-theme="light"] .period-card .paid-weeks-badge.is-partial span{
+  color:#92400e !important;
+}
