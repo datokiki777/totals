@@ -740,6 +740,18 @@ html[data-theme="light"] .month-row{
   text-align:center;
 }
 
+.period-collapse-paid-weeks{
+  margin:0 8px 0 auto;
+  align-items:center;
+  flex-shrink:0;
+}
+
+.period-collapse-paid-weeks > span{
+  font-size:10px;
+  margin:0 6px 0 0;
+  white-space:nowrap;
+}
+
 /* =========================================================
    14) Status list layout
 ========================================================= */

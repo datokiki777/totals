@@ -104,6 +104,15 @@
     text-align:center;
   }
 
+  .period-collapse-paid-weeks{
+    margin-left:auto;
+    margin-right:6px;
+  }
+
+  .period-collapse-paid-weeks > span{
+    display:none;
+  }
+
   .overview-date-row{
     align-items:flex-start;
     flex-direction:column;
